@@ -1,7 +1,7 @@
 # Ignore my vscode configuration (in this case only python interpreter)
 .vscode/*
 
-audio/*.wav
+raw_data/*.wav
 
 *.csv
 
