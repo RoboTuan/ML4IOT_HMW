@@ -1,18 +1,7 @@
 # Ignore my vscode configuration (in this case only python interpreter)
 .vscode/*
 
-raw_data/*.wav
-
+*.wav
+*.bin
 *.csv
-
 *.tfrecord
-
-#Lab02/audio_sequence/
-#Lab02/images/
-#Lab02/MFCCs/
-#Lab02/STFTs/
-
-#Lab02/*.wav
-#Lab02/*.jpg
-#Lab02/serialized_mfccs
-#Lab02/serialized_spectogram
