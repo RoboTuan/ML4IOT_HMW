@@ -5,3 +5,9 @@
 *.bin
 *.csv
 *.tfrecord
+*.tflite
+*.zlib
+
+data/
+models/
+th_test/
