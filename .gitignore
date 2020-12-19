@@ -1,7 +1,13 @@
 # Ignore my vscode configuration (in this case only python interpreter)
-.vscode/*
+.vscode/
 
 *.wav
 *.bin
 *.csv
 *.tfrecord
+*.tflite
+*.zlib
+
+data/
+models/
+th_test/
