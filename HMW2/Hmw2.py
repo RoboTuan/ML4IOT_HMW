@@ -20,7 +20,7 @@ ROOT_DIR = "./HMW2/"
 
 model_type = "DS-CNN"
 mfcc = True
-alpha = 0.5
+alpha = 0.4
 PRUNING = False
 
 # zip_path = tf.keras.utils.get_file(
@@ -170,7 +170,7 @@ STFT_OPTIONS = {'frame_length': 256, 'frame_step': 128, 'mfcc': False}
 # new_frame_step = resampling_rate * 0.02
 
 #MFCC_OPTIONS = {'frame_length': 640, 'frame_step': 320, 'mfcc': True,
-MFCC_OPTIONS = {'frame_length': 320, 'frame_step': 160, 'mfcc': True,
+MFCC_OPTIONS = {'frame_length': 240, 'frame_step': 160, 'mfcc': True,
         'lower_frequency': 20, 'upper_frequency': 4000, 'num_mel_bins': 40,
         #'lower_frequency': 20, 'upper_frequency': 4000, 'num_mel_bins': 20,
         'num_coefficients': 10}
@@ -240,6 +240,8 @@ elif model_type == "DS-CNN":
         keras.layers.Conv2D(filters=int(alpha*256), kernel_size=[1, 1], strides=[1,1], use_bias=False),
         keras.layers.BatchNormalization(momentum=0.1),
         keras.layers.ReLU(),
+        # Adding a dropout
+        keras.layers.Dropout(0.1),
         keras.layers.DepthwiseConv2D(kernel_size=[3,3], strides=[1, 1], use_bias=False),
         keras.layers.Conv2D(filters=int(alpha*256), kernel_size=[1, 1], strides=[1, 1], use_bias=False),
         keras.layers.BatchNormalization(momentum=0.1),
@@ -266,7 +268,9 @@ if PRUNING is True:
             initial_sparsity=0.50,
             final_sparsity=0.90,
             begin_step=len(train_ds)*5,
-            end_step=len(train_ds)*15)
+            end_step=len(train_ds)*15),
+        # 'block_size':(1, 1),
+        # 'block_pooling_type':'AVG'
     }
     
     callbacks.append(tfmot.sparsity.keras.UpdatePruningStep())
@@ -320,9 +324,9 @@ converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)
 
 converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
-# converter.representative_dataset = representative_data_gen
+#converter.representative_dataset = representative_data_gen
 
-# converter.target_spec.supported_types = [tf.float16]
+#converter.target_spec.supported_types = [tf.float16]
 
 tflite_model = converter.convert()
 
