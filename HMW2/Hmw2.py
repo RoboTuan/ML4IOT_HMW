@@ -11,6 +11,8 @@ import tensorflow.lite as tflite
 from tensorflow_model_optimization.python.core.api.sparsity import keras as sparsity
 import zlib
 import sys
+import shutil
+
 
 seed = 42
 tf.random.set_seed(seed)
@@ -205,7 +207,13 @@ units=8
 
 # RE DO THE TEST DATASET IF WHEN CHANGING STFT OR MFCC
 dataset_dir= ROOT_DIR + "/test_ds_{}".format(mfcc)
+
+if os.path.exists(data_dir):
+    shutil.rmtree(dataset_dir)
+
 tf.data.experimental.save(test_ds, dataset_dir)
+
+sys.exit()
 
 if model_type == "MLP":
     model = keras.Sequential([
