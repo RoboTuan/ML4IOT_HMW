@@ -172,6 +172,7 @@ STFT_OPTIONS = {'frame_length': 256, 'frame_step': 128, 'mfcc': False}
 # new_frame_step = resampling_rate * 0.02
 
 #MFCC_OPTIONS = {'frame_length': 640, 'frame_step': 320, 'mfcc': True,
+#MFCC_OPTIONS = {'frame_length': 320, 'frame_step': 160, 'mfcc': True,
 MFCC_OPTIONS = {'frame_length': 240, 'frame_step': 160, 'mfcc': True,
         'lower_frequency': 20, 'upper_frequency': 4000, 'num_mel_bins': 40,
         #'lower_frequency': 20, 'upper_frequency': 4000, 'num_mel_bins': 20,
