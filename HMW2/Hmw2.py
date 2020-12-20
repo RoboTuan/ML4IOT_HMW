@@ -20,7 +20,8 @@ ROOT_DIR = "./HMW2/"
 
 model_type = "DS-CNN"
 mfcc = True
-alpha = 0.6
+alpha = 0.5
+PRUNING = False
 
 # zip_path = tf.keras.utils.get_file(
 #         origin="http://storage.googleapis.com/download.tensorflow.org/data/mini_speech_commands.zip",
@@ -251,7 +252,32 @@ else:
     print("Invalid model selected")
     sys.exit()
 
+
 saved_model_dir = './models/kws'
+
+callbacks = []
+
+if PRUNING is True:
+
+    prune_low_magnitude = tfmot.sparsity.keras.prune_low_magnitude
+
+    pruning_params = {
+        'pruning_schedule':tfmot.sparsity.keras.PolynomialDecay(
+            initial_sparsity=0.50,
+            final_sparsity=0.90,
+            begin_step=len(train_ds)*5,
+            end_step=len(train_ds)*15)
+    }
+    
+    callbacks.append(tfmot.sparsity.keras.UpdatePruningStep())
+
+    if mfcc is True:
+        input_shape =[None,49,10,1]
+    
+    else:
+        input_shape = [None,32,32,1]
+
+    model.build(input_shape)
 
 
 model.compile(optimizer='adam',
@@ -261,13 +287,18 @@ model.compile(optimizer='adam',
 history = model.fit(
     train_ds,
     epochs=20,
+    batch_size=32,
     validation_data=val_ds,
+    callbacks = callbacks
     )
 
 print("Test accuracy:")
 test_accuracy= model.evaluate(test_ds)
 
 model.summary()
+
+if PRUNING is True:
+    model=tfmot.sparsity.keras.strip_pruning(model)
 
 
 run_model = tf.function(lambda x: model(x))
