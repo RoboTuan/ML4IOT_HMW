@@ -22,7 +22,7 @@ ROOT_DIR = "./HMW2/"
 
 model_type = "DS-CNN"
 mfcc = True
-alpha = 0.4
+alpha = 0.5
 PRUNING = False
 
 # zip_path = tf.keras.utils.get_file(
@@ -212,8 +212,7 @@ if os.path.exists(data_dir):
     shutil.rmtree(dataset_dir)
 
 tf.data.experimental.save(test_ds, dataset_dir)
-
-sys.exit()
+# sys.exit()
 
 if model_type == "MLP":
     model = keras.Sequential([
@@ -249,7 +248,7 @@ elif model_type == "DS-CNN":
         keras.layers.BatchNormalization(momentum=0.1),
         keras.layers.ReLU(),
         # Adding a dropout
-        keras.layers.Dropout(0.1),
+        # keras.layers.Dropout(0.1),
         keras.layers.DepthwiseConv2D(kernel_size=[3,3], strides=[1, 1], use_bias=False),
         keras.layers.Conv2D(filters=int(alpha*256), kernel_size=[1, 1], strides=[1, 1], use_bias=False),
         keras.layers.BatchNormalization(momentum=0.1),
