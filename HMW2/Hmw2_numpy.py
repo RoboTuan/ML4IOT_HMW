@@ -98,7 +98,6 @@ class SignalGenerator:
         label_id = tf.argmax(label == self.labels)
         audio_binary = tf.io.read_file(file_path)
         audio, _ = tf.audio.decode_wav(audio_binary)
-        #audio = tf.numpy_function(custom_resampling,[audio,self.resampling_rate],tf.float32)
         audio = tf.squeeze(audio, axis=1)
 
         return audio, label_id
@@ -110,7 +109,6 @@ class SignalGenerator:
         else:
             rate = self.sampling_rate
         zero_padding = tf.zeros([rate] - tf.shape(audio), dtype=tf.float32)
-        #print(self.sampling_rate)
         audio = tf.concat([audio, zero_padding], 0)
         audio.set_shape([rate])
 
