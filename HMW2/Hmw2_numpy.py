@@ -25,16 +25,17 @@ mfcc = True
 alpha = 0.5
 PRUNING = False
 
-# zip_path = tf.keras.utils.get_file(
-#         origin="http://storage.googleapis.com/download.tensorflow.org/data/mini_speech_commands.zip",
-#         fname='mini_speech_commands.zip',
-#         extract=True,
-#         cache_dir='.', cache_subdir='data')
+zip_path = tf.keras.utils.get_file(
+        origin="http://storage.googleapis.com/download.tensorflow.org/data/mini_speech_commands.zip",
+        fname='mini_speech_commands.zip',
+        extract=True,
+        cache_dir='.', cache_subdir='data')
+
 data_dir = os.path.join('.', 'data', 'mini_speech_commands')
-# filenames = tf.io.gfile.glob(str(data_dir) + '/*/*')
-# filenames = tf.random.shuffle(filenames)
-# num_samples = len(filenames)
-# total = 8000
+filenames = tf.io.gfile.glob(str(data_dir) + '/*/*')
+filenames = tf.random.shuffle(filenames)
+num_samples = len(filenames)
+total = 8000
 
 train_files = tf.strings.split(tf.io.read_file(ROOT_DIR +'kws_train_split.txt'),sep='\n')[:-1]
 val_files= tf.strings.split(tf.io.read_file(ROOT_DIR +'kws_val_split.txt'),sep='\n')[:-1]
@@ -51,7 +52,7 @@ class SignalGenerator:
 
         self.labels = labels
 
-        # Added resampling_rte
+        # Added resampling_rate
         self.sampling_rate = sampling_rate
         self.resampling_rate = resampling_rate
 
@@ -68,27 +69,24 @@ class SignalGenerator:
 
 
         if self.resampling_rate is not None:
-            # Step for resampling
-            self.step = int(self.sampling_rate/self.resampling_rate)
-            
-            if mfcc is True:
-                self.linear_to_mel_weight_matrix = tf.signal.linear_to_mel_weight_matrix(
-                        self.num_mel_bins, num_spectrogram_bins, self.resampling_rate,
-                        self.lower_frequency, self.upper_frequency)
-                self.preprocess = self.preprocess_with_mfcc
-            else:
-                self.preprocess = self.preprocess_with_stft
+            rate = self.resampling_rate
 
         else:
-            self.step = 1
-            
-            if mfcc is True:
-                self.linear_to_mel_weight_matrix = tf.signal.linear_to_mel_weight_matrix(
-                        self.num_mel_bins, num_spectrogram_bins, self.sampling_rate,
-                        self.lower_frequency, self.upper_frequency)
-                self.preprocess = self.preprocess_with_mfcc
-            else:
-                self.preprocess = self.preprocess_with_stft
+            rate = self.sampling_rate
+           
+        if mfcc is True:
+            self.linear_to_mel_weight_matrix = tf.signal.linear_to_mel_weight_matrix(
+                    self.num_mel_bins, num_spectrogram_bins, rate,
+                    self.lower_frequency, self.upper_frequency)
+            self.preprocess = self.preprocess_with_mfcc
+        else:
+            self.preprocess = self.preprocess_with_stft
+
+
+    def custom_resampling(self, audio):
+        audio = signal.resample_poly(audio, 1, self.sampling_rate // self.resampling_rate)
+        audio = tf.convert_to_tensor(audio, dtype=tf.float32)
+        return audio
 
     def read(self, file_path):
         parts = tf.strings.split(file_path, os.path.sep)
@@ -98,9 +96,9 @@ class SignalGenerator:
         audio, _ = tf.audio.decode_wav(audio_binary)
         audio = tf.squeeze(audio, axis=1)
 
-        #print(self.step)
+        if self.resampling_rate is not None:
+            audio = tf.numpy_function(self.custom_resampling, [audio], tf.float32)
 
-        audio = audio[::self.step]
         return audio, label_id
 
 
@@ -110,7 +108,6 @@ class SignalGenerator:
         else:
             rate = self.sampling_rate
         zero_padding = tf.zeros([rate] - tf.shape(audio), dtype=tf.float32)
-        #print(self.sampling_rate)
         audio = tf.concat([audio, zero_padding], 0)
         audio.set_shape([rate])
 
@@ -173,7 +170,7 @@ STFT_OPTIONS = {'frame_length': 256, 'frame_step': 128, 'mfcc': False}
 
 #MFCC_OPTIONS = {'frame_length': 640, 'frame_step': 320, 'mfcc': True,
 #MFCC_OPTIONS = {'frame_length': 320, 'frame_step': 160, 'mfcc': True,
-MFCC_OPTIONS = {'frame_length': 240, 'frame_step': 160, 'mfcc': True,
+MFCC_OPTIONS = {'frame_length': 240, 'frame_step': 120, 'mfcc': True,
         'lower_frequency': 20, 'upper_frequency': 4000, 'num_mel_bins': 40,
         #'lower_frequency': 20, 'upper_frequency': 4000, 'num_mel_bins': 20,
         'num_coefficients': 10}
@@ -207,7 +204,7 @@ units=8
 #     sys.exit()
 
 # RE DO THE TEST DATASET IF WHEN CHANGING STFT OR MFCC
-dataset_dir= ROOT_DIR + "/test_ds_{}".format(mfcc)
+dataset_dir= ROOT_DIR + "test_ds_{}".format(mfcc)
 
 if os.path.exists(dataset_dir):
     shutil.rmtree(dataset_dir)
@@ -284,7 +281,7 @@ if PRUNING is True:
     callbacks.append(tfmot.sparsity.keras.UpdatePruningStep())
 
     if mfcc is True:
-        input_shape =[None,49,10,1]
+        input_shape =[None,65,10,1]
     
     else:
         input_shape = [None,32,32,1]
@@ -316,7 +313,7 @@ if PRUNING is True:
 run_model = tf.function(lambda x: model(x))
 
 if mfcc == True:
-    tensor_spec_dimension = [1, 49, 10, 1]
+    tensor_spec_dimension = [1, 65, 10, 1]
 else:
     tensor_spec_dimension = [1, 32, 32, 1]
 
@@ -366,7 +363,7 @@ output_details = interpreter.get_output_details()
 input_shape = input_details[0]['shape']
 
 if mfcc is True:
-    tensor_spec =(tf.TensorSpec([None,49,10,1], dtype=tf.float32), tf.TensorSpec([None], dtype=tf.int64))
+    tensor_spec =(tf.TensorSpec([None,65,10,1], dtype=tf.float32), tf.TensorSpec([None], dtype=tf.int64))
 else:
     tensor_spec =(tf.TensorSpec([None,32,32,1], dtype=tf.float32), tf.TensorSpec([None], dtype=tf.int64))
 

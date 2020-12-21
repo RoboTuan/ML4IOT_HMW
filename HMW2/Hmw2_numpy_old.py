@@ -25,16 +25,17 @@ mfcc = True
 alpha = 0.5
 PRUNING = False
 
-# zip_path = tf.keras.utils.get_file(
-#         origin="http://storage.googleapis.com/download.tensorflow.org/data/mini_speech_commands.zip",
-#         fname='mini_speech_commands.zip',
-#         extract=True,
-#         cache_dir='.', cache_subdir='data')
+zip_path = tf.keras.utils.get_file(
+        origin="http://storage.googleapis.com/download.tensorflow.org/data/mini_speech_commands.zip",
+        fname='mini_speech_commands.zip',
+        extract=True,
+        cache_dir='.', cache_subdir='data')
+
 data_dir = os.path.join('.', 'data', 'mini_speech_commands')
-# filenames = tf.io.gfile.glob(str(data_dir) + '/*/*')
-# filenames = tf.random.shuffle(filenames)
-# num_samples = len(filenames)
-# total = 8000
+filenames = tf.io.gfile.glob(str(data_dir) + '/*/*')
+filenames = tf.random.shuffle(filenames)
+num_samples = len(filenames)
+total = 8000
 
 train_files = tf.strings.split(tf.io.read_file(ROOT_DIR +'kws_train_split.txt'),sep='\n')[:-1]
 val_files= tf.strings.split(tf.io.read_file(ROOT_DIR +'kws_val_split.txt'),sep='\n')[:-1]
@@ -44,6 +45,11 @@ LABELS = np.array(tf.io.gfile.listdir(str(data_dir)))
 LABELS = LABELS[LABELS != 'README.md']
 
 
+def custom_resampling(audio, sampling_rate):
+    audio = signal.resample_poly(audio,1,16000 // sampling_rate)
+    audio = tf.convert_to_tensor(audio,dtype=tf.float32)
+    return audio
+
 class SignalGenerator:
     def __init__(self, labels, sampling_rate, frame_length, frame_step,
             num_mel_bins=None, lower_frequency=None, upper_frequency=None,
@@ -51,7 +57,7 @@ class SignalGenerator:
 
         self.labels = labels
 
-        # Added resampling_rte
+        # Added resampling_rate
         self.sampling_rate = sampling_rate
         self.resampling_rate = resampling_rate
 
@@ -68,9 +74,7 @@ class SignalGenerator:
 
 
         if self.resampling_rate is not None:
-            # Step for resampling
-            self.step = int(self.sampling_rate/self.resampling_rate)
-            
+                        
             if mfcc is True:
                 self.linear_to_mel_weight_matrix = tf.signal.linear_to_mel_weight_matrix(
                         self.num_mel_bins, num_spectrogram_bins, self.resampling_rate,
@@ -78,10 +82,8 @@ class SignalGenerator:
                 self.preprocess = self.preprocess_with_mfcc
             else:
                 self.preprocess = self.preprocess_with_stft
-
         else:
-            self.step = 1
-            
+           
             if mfcc is True:
                 self.linear_to_mel_weight_matrix = tf.signal.linear_to_mel_weight_matrix(
                         self.num_mel_bins, num_spectrogram_bins, self.sampling_rate,
@@ -98,9 +100,6 @@ class SignalGenerator:
         audio, _ = tf.audio.decode_wav(audio_binary)
         audio = tf.squeeze(audio, axis=1)
 
-        #print(self.step)
-
-        audio = audio[::self.step]
         return audio, label_id
 
 
@@ -110,7 +109,6 @@ class SignalGenerator:
         else:
             rate = self.sampling_rate
         zero_padding = tf.zeros([rate] - tf.shape(audio), dtype=tf.float32)
-        #print(self.sampling_rate)
         audio = tf.concat([audio, zero_padding], 0)
         audio.set_shape([rate])
 
@@ -143,6 +141,7 @@ class SignalGenerator:
 
     def preprocess_with_mfcc(self, file_path):
         audio, label = self.read(file_path)
+        audio = tf.numpy_function(custom_resampling,[audio,self.resampling_rate],tf.float32)
         audio = self.pad(audio)
         spectrogram = self.get_spectrogram(audio)
         mfccs = self.get_mfccs(spectrogram)
@@ -207,7 +206,7 @@ units=8
 #     sys.exit()
 
 # RE DO THE TEST DATASET IF WHEN CHANGING STFT OR MFCC
-dataset_dir= ROOT_DIR + "/test_ds_{}".format(mfcc)
+dataset_dir= ROOT_DIR + "test_ds_{}".format(mfcc)
 
 if os.path.exists(dataset_dir):
     shutil.rmtree(dataset_dir)
