@@ -45,6 +45,11 @@ LABELS = np.array(tf.io.gfile.listdir(str(data_dir)))
 LABELS = LABELS[LABELS != 'README.md']
 
 
+def custom_resampling(audio, sampling_rate):
+    audio = signal.resample_poly(audio,1,16000 // sampling_rate)
+    audio = tf.convert_to_tensor(audio,dtype=tf.float32)
+    return audio
+
 class SignalGenerator:
     def __init__(self, labels, sampling_rate, frame_length, frame_step,
             num_mel_bins=None, lower_frequency=None, upper_frequency=None,
@@ -52,7 +57,7 @@ class SignalGenerator:
 
         self.labels = labels
 
-        # Added resampling_rte
+        # Added resampling_rate
         self.sampling_rate = sampling_rate
         self.resampling_rate = resampling_rate
 
@@ -69,9 +74,7 @@ class SignalGenerator:
 
 
         if self.resampling_rate is not None:
-            # Step for resampling
-            self.step = int(self.sampling_rate/self.resampling_rate)
-            
+                        
             if mfcc is True:
                 self.linear_to_mel_weight_matrix = tf.signal.linear_to_mel_weight_matrix(
                         self.num_mel_bins, num_spectrogram_bins, self.resampling_rate,
@@ -79,10 +82,8 @@ class SignalGenerator:
                 self.preprocess = self.preprocess_with_mfcc
             else:
                 self.preprocess = self.preprocess_with_stft
-
         else:
-            self.step = 1
-            
+           
             if mfcc is True:
                 self.linear_to_mel_weight_matrix = tf.signal.linear_to_mel_weight_matrix(
                         self.num_mel_bins, num_spectrogram_bins, self.sampling_rate,
@@ -97,11 +98,9 @@ class SignalGenerator:
         label_id = tf.argmax(label == self.labels)
         audio_binary = tf.io.read_file(file_path)
         audio, _ = tf.audio.decode_wav(audio_binary)
+        #audio = tf.numpy_function(custom_resampling,[audio,self.resampling_rate],tf.float32)
         audio = tf.squeeze(audio, axis=1)
 
-        #print(self.step)
-
-        audio = audio[::self.step]
         return audio, label_id
 
 
@@ -144,6 +143,7 @@ class SignalGenerator:
 
     def preprocess_with_mfcc(self, file_path):
         audio, label = self.read(file_path)
+        audio = tf.numpy_function(custom_resampling,[audio,self.resampling_rate],tf.float32)
         audio = self.pad(audio)
         spectrogram = self.get_spectrogram(audio)
         mfccs = self.get_mfccs(spectrogram)
