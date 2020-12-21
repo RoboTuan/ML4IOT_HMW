@@ -13,9 +13,26 @@ import zlib
 import os
 import sys
 
-tfModel = "./model.tflite"
-dataset_dir = "./test_ds_True"
+version = "c"
+
+compressed_tfModel = './Group1_kws_{}.tflite.zlib'.format(version)
+tfModel = compressed_tfModel
+dataset_dir = "./test_ds"
 mfcc = True
+
+if mfcc is True:
+    #tensor_spec_dimension = [None, 49, 10, 1]
+    tensor_spec_dimension = [1, 65, 10, 1]
+else:
+    tensor_spec_dimension = [None,32,32,1]
+
+# Decompress it
+str_object1 = open(tfModel, 'rb').read()
+str_object2 = zlib.decompress(str_object1)
+tfModel = tfModel.replace('.zlib', '')
+f = open(tfModel, 'wb')
+f.write(str_object2)
+f.close()
 
 interpreter = tflite.Interpreter(model_path=tfModel)
 interpreter.allocate_tensors()
@@ -26,9 +43,9 @@ output_details = interpreter.get_output_details()
 input_shape = input_details[0]['shape']
 
 if mfcc is True:
-    tensor_spec =(tf.TensorSpec([None,49,10,1], dtype=tf.float32), tf.TensorSpec([None], dtype=tf.int64))
+    tensor_spec =(tf.TensorSpec(tensor_spec_dimension, dtype=tf.float32), tf.TensorSpec([None], dtype=tf.int64))
 else:
-    tensor_spec =(tf.TensorSpec([None,32,32,1], dtype=tf.float32), tf.TensorSpec([None], dtype=tf.int64))
+    tensor_spec =(tf.TensorSpec(tensor_spec_dimension, dtype=tf.float32), tf.TensorSpec([None], dtype=tf.int64))
 
 test_ds = tf.data.experimental.load(dataset_dir, tensor_spec) 
 test_ds= test_ds.unbatch().batch(1)
@@ -46,4 +63,6 @@ for x, y_true in test_ds:
     count += 1 
 
 accuracy/=float(count)
-print("Accuracy {}".format(accuracy*100))
+print(f"Size of decompressed model: {os.path.getsize(tfModel)/1024} kB")
+print(f"Size of compressed model: {os.path.getsize(compressed_tfModel)/1024} kB")
+print("Accuracy: {}".format(accuracy*100))
