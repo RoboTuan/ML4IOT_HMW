@@ -25,21 +25,17 @@ np.random.seed(seed)
 
 sampling_rate = 16000
 
-#TODO: check the size and put it as options
 if version == "a" or version == "b":
     alpha = 0.3
     frame_length = 640
     frame_step = 320
     resampling_rate = None
-    tensor_spec_dimension = [1, 49, 10, 1]
-
 
 elif version == "c":
     alpha = 0.5
     frame_length = 240
     frame_step = 120
     resampling_rate = 8000
-    tensor_spec_dimension = [1, 65, 10, 1]
 
 
 else:
