@@ -48,7 +48,7 @@ else:
 
 
 ROOT_DIR = "./"
-dataset_dir= ROOT_DIR + "test_ds"
+dataset_dir= ROOT_DIR + 'kws_test_{}'.format(version)
 saved_model_dir = './models/kws'
 tflite_model_dir = './Group1_kws_{}.tflite.zlib'.format(version)
 
@@ -238,11 +238,7 @@ history = model.fit(
 print("Test accuracy:")
 test_accuracy= model.evaluate(test_ds)
 
-# TODO: check the model saving and see if tf.function is useful
-run_model = tf.function(lambda x: model(x))
-concrete_func = run_model.get_concrete_function(tf.TensorSpec(tensor_spec_dimension, tf.float32))
-
-model.save(saved_model_dir, signatures=concrete_func)
+model.save(saved_model_dir)
 
 
 # Post training quantization and tflite conversion

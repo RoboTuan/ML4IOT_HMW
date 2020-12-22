@@ -44,8 +44,6 @@ std = train_data.std(axis=0)
 
 input_width = 6
 LABEL_OPTIONS = 2
-
-MODEL_OPTIONS = "MLP"
 ALPHA = 0.05
 
 units=6*2
@@ -133,8 +131,7 @@ class MsMoMAE(tf.keras.metrics.Metric):
         return result
 
 
-if MODEL_OPTIONS == "MLP":
-    model = keras.Sequential([
+model = keras.Sequential([
     keras.layers.Flatten(input_shape=(6, 2)),
     keras.layers.Dense(units=int(128*ALPHA), activation='relu', name='first_dense'),
     keras.layers.Dense(units=int(128*ALPHA), activation='relu', name='second_dense'),
@@ -142,20 +139,6 @@ if MODEL_OPTIONS == "MLP":
     keras.layers.Reshape([6, 2])
     ])
 
-
-elif MODEL_OPTIONS == "CNN-1D":
-    model = keras.Sequential([
-        keras.layers.Conv1D(filters=int(64*ALPHA), kernel_size=3, activation='relu', name='first_conv'),
-        keras.layers.Flatten(input_shape=(64,)),
-        keras.layers.Dense(units=int(64*ALPHA), activation='relu', name='first_dense'),
-        keras.layers.Dense(units, name='second_dense'),
-        keras.layers.Reshape([6, 2])
-    ])
-
-
-else:
-    print("Invalid model selected")
-    sys.exit()
 
 
 saved_model_dir = './models/climate_{}'.format(str(LABEL_OPTIONS))
