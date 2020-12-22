@@ -13,7 +13,13 @@ import zlib
 import os
 import sys
 
-version = "c"
+parser = argparse.ArgumentParser()
+parser.add_argument('--version', type=str, required=True, help='Version of the model')
+
+args, _ = parser.parse_known_args()
+
+version = args.version
+
 
 compressed_tfModel = './Group1_kws_{}.tflite.zlib'.format(version)
 tfModel = compressed_tfModel
@@ -21,8 +27,10 @@ dataset_dir = "./test_ds"
 mfcc = True
 
 if mfcc is True:
-    #tensor_spec_dimension = [None, 49, 10, 1]
-    tensor_spec_dimension = [1, 65, 10, 1]
+    if version == "c":
+        tensor_spec_dimension = [None, 65, 10, 1]
+    else:    
+        tensor_spec_dimension = [None, 49, 10, 1]
 else:
     tensor_spec_dimension = [None,32,32,1]
 
