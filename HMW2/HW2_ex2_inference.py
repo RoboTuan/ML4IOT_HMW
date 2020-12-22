@@ -23,7 +23,7 @@ version = args.version
 
 compressed_tfModel = './Group1_kws_{}.tflite.zlib'.format(version)
 tfModel = compressed_tfModel
-dataset_dir = "./test_ds"
+dataset_dir = 'kws_test_{}'.format(version)
 mfcc = True
 
 if mfcc is True:
