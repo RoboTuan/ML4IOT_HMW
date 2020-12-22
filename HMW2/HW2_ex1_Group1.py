@@ -8,6 +8,7 @@ import tensorflow_model_optimization as tfmot
 import tensorflow.lite as tflite
 import zlib
 import sys
+import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--version', type=str, required=True, help='Version of the model')
@@ -102,9 +103,11 @@ train_ds = generator.make_dataset(train_data, True)
 val_ds = generator.make_dataset(val_data, False)
 test_ds = generator.make_dataset(test_data, False)
 
-# tf.data.experimental.save(train_ds, './th_train')
-# tf.data.experimental.save(val_ds, './th_val')
-# tf.data.experimental.save(test_ds, './th_test')
+
+if os.path.exists('./th_test'):
+    shutil.rmtree('./th_test')
+
+tf.data.experimental.save(test_ds, './th_test')
 
 
 class MsMoMAE(tf.keras.metrics.Metric):
@@ -189,7 +192,7 @@ converter.target_spec.supported_types = [tf.float16]
 tflite_model = converter.convert()
 
 
-tflite_model_dir = './models/Group1_th_{}.tflite.zlib'.format(version)
+tflite_model_dir = './Group1_th_{}.tflite.zlib'.format(version)
 
 with open(tflite_model_dir, 'wb') as fp:
     tflite_compressed = zlib.compress(tflite_model)
