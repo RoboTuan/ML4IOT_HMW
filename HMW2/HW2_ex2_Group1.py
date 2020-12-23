@@ -63,7 +63,7 @@ train_files = tf.strings.split(tf.io.read_file(ROOT_DIR +'kws_train_split.txt'),
 val_files= tf.strings.split(tf.io.read_file(ROOT_DIR +'kws_val_split.txt'),sep='\n')[:-1]
 test_files = tf.strings.split(tf.io.read_file(ROOT_DIR +'kws_test_split.txt'),sep='\n')[:-1]
 
-LABELS = ['right' 'go' 'no' 'left' 'stop' 'up' 'down' 'yes']
+LABELS = ['right', 'go', 'no', 'left', 'stop', 'up', 'down', 'yes']
 
 #Data preprocessing
 class SignalGenerator:
