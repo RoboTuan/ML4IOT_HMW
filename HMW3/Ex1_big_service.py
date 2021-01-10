@@ -98,7 +98,7 @@ class BigModel(object):
         y_pred = y_pred.squeeze()
         y_pred = np.argmax(y_pred)
 
-        print("Big script:", y_pred)
+        #print("Big script:", y_pred)
 
         output_body = {
             'predicted_label': str(y_pred)
