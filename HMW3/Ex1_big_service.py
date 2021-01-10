@@ -18,8 +18,8 @@ class BigModel(object):
         self.interpreter = tflite.Interpreter(model_path=big_model_path)
         self.interpreter.allocate_tensors()
 
-        self.input_details = interpreter.get_input_details()
-        self.output_details = interpreter.get_output_details()
+        self.input_details = self.interpreter.get_input_details()
+        self.output_details = self.interpreter.get_output_details()
 
 
         self.sampling_rate = 16000
@@ -33,7 +33,7 @@ class BigModel(object):
         self.num_mel_bins = 40
         self.num_coefficients = 10
 
-        num_spectrogram_bins = (frame_length) // 2 + 1
+        num_spectrogram_bins = (self.frame_length) // 2 + 1
 
         self.num_frames = (self.sampling_rate - self.frame_length) // self.frame_step + 1
 
@@ -41,7 +41,6 @@ class BigModel(object):
         self.linear_to_mel_weight_matrix = tf.signal.linear_to_mel_weight_matrix(
                 self.num_mel_bins, num_spectrogram_bins, self.sampling_rate,
                 self.lower_frequency, self.upper_frequency)
-        self.preprocess = self.preprocess_with_mfcc
 
 
 
@@ -95,12 +94,14 @@ class BigModel(object):
         self.interpreter.set_tensor(self.input_details[0]['index'], input_tensor)
         self.interpreter.invoke()
         
-        y_pred = interpreter.get_tensor(self.output_details[0]['index'])
+        y_pred = self.interpreter.get_tensor(self.output_details[0]['index'])
         y_pred = y_pred.squeeze()
         y_pred = np.argmax(y_pred)
 
+        print("Big script:", y_pred)
+
         output_body = {
-            'predicted_label': y_pred
+            'predicted_label': str(y_pred)
         }
 
         output_body = json.dumps(output_body)

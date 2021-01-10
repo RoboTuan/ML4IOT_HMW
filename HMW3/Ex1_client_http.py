@@ -210,7 +210,9 @@ for file_path in test_files:
     y_pred = interpreter.get_tensor(output_details[0]['index'])
     y_pred = y_pred.squeeze()
 
-    BIG = success_checker(y_pred, 1)
+    BIG = success_checker(y_pred, 3)
+
+    print(BIG)
 
     if BIG is True:
         now = datetime.datetime.now()
@@ -241,11 +243,12 @@ for file_path in test_files:
         r = requests.put(url, json=body)
 
         if r.status_code == 200:
+            print("little: ", np.argmax(y_pred))
             rbody = r.json()
             #TODO: do stuff
-            y_pred = rbody['predicted_label']
-            print(y_pred, type(y_pred))
-            sys.exit()
+            y_pred = int(rbody['predicted_label'])
+            print("Big: ", y_pred, type(y_pred))
+            #sys.exit()
 
         else:
             #TODO: say what error
@@ -261,6 +264,9 @@ for file_path in test_files:
     
     accuracy += y_pred == y_true
     count += 1
+
+    if count == 4:
+        sys.exit()
 
 accuracy/=float(count)
 print("Accuracy: {}".format(accuracy*100))
