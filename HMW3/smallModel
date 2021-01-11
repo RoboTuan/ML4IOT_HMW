@@ -1,0 +1,546 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "Untitled5.ipynb",
+      "provenance": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/RoboTuan/ML4IOT_HMW/blob/main/HMW3/smallModel\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 1000
+        },
+        "id": "egKVJ5munaLC",
+        "outputId": "57c12c29-cb98-4756-e8b0-b9d4fd5ef372"
+      },
+      "source": [
+        "#!pip uninstall tensorflow \r\n",
+        "!pip install tensorflow===2.3.0\r\n",
+        "!pip install -q tensorflow-model-optimization"
+      ],
+      "execution_count": 1,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Collecting tensorflow===2.3.0\n",
+            "\u001b[?25l  Downloading https://files.pythonhosted.org/packages/97/ae/0b08f53498417914f2274cc3b5576d2b83179b0cbb209457d0fde0152174/tensorflow-2.3.0-cp36-cp36m-manylinux2010_x86_64.whl (320.4MB)\n",
+            "\u001b[K     |████████████████████████████████| 320.4MB 51kB/s \n",
+            "\u001b[?25hRequirement already satisfied: gast==0.3.3 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (0.3.3)\n",
+            "Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (1.1.0)\n",
+            "Requirement already satisfied: wheel>=0.26 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (0.36.2)\n",
+            "Requirement already satisfied: protobuf>=3.9.2 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (3.12.4)\n",
+            "Requirement already satisfied: six>=1.12.0 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (1.15.0)\n",
+            "Requirement already satisfied: grpcio>=1.8.6 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (1.32.0)\n",
+            "Requirement already satisfied: h5py<2.11.0,>=2.10.0 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (2.10.0)\n",
+            "Requirement already satisfied: opt-einsum>=2.3.2 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (3.3.0)\n",
+            "Requirement already satisfied: scipy==1.4.1 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (1.4.1)\n",
+            "Requirement already satisfied: absl-py>=0.7.0 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (0.10.0)\n",
+            "Requirement already satisfied: google-pasta>=0.1.8 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (0.2.0)\n",
+            "Requirement already satisfied: astunparse==1.6.3 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (1.6.3)\n",
+            "Collecting tensorflow-estimator<2.4.0,>=2.3.0\n",
+            "\u001b[?25l  Downloading https://files.pythonhosted.org/packages/e9/ed/5853ec0ae380cba4588eab1524e18ece1583b65f7ae0e97321f5ff9dfd60/tensorflow_estimator-2.3.0-py2.py3-none-any.whl (459kB)\n",
+            "\u001b[K     |████████████████████████████████| 460kB 27.6MB/s \n",
+            "\u001b[?25hRequirement already satisfied: wrapt>=1.11.1 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (1.12.1)\n",
+            "Requirement already satisfied: keras-preprocessing<1.2,>=1.1.1 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (1.1.2)\n",
+            "Collecting numpy<1.19.0,>=1.16.0\n",
+            "\u001b[?25l  Downloading https://files.pythonhosted.org/packages/b3/a9/b1bc4c935ed063766bce7d3e8c7b20bd52e515ff1c732b02caacf7918e5a/numpy-1.18.5-cp36-cp36m-manylinux1_x86_64.whl (20.1MB)\n",
+            "\u001b[K     |████████████████████████████████| 20.1MB 1.2MB/s \n",
+            "\u001b[?25hRequirement already satisfied: tensorboard<3,>=2.3.0 in /usr/local/lib/python3.6/dist-packages (from tensorflow===2.3.0) (2.4.0)\n",
+            "Requirement already satisfied: setuptools in /usr/local/lib/python3.6/dist-packages (from protobuf>=3.9.2->tensorflow===2.3.0) (51.1.1)\n",
+            "Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.6/dist-packages (from tensorboard<3,>=2.3.0->tensorflow===2.3.0) (3.3.3)\n",
+            "Requirement already satisfied: google-auth-oauthlib<0.5,>=0.4.1 in /usr/local/lib/python3.6/dist-packages (from tensorboard<3,>=2.3.0->tensorflow===2.3.0) (0.4.2)\n",
+            "Requirement already satisfied: tensorboard-plugin-wit>=1.6.0 in /usr/local/lib/python3.6/dist-packages (from tensorboard<3,>=2.3.0->tensorflow===2.3.0) (1.7.0)\n",
+            "Requirement already satisfied: requests<3,>=2.21.0 in /usr/local/lib/python3.6/dist-packages (from tensorboard<3,>=2.3.0->tensorflow===2.3.0) (2.23.0)\n",
+            "Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.6/dist-packages (from tensorboard<3,>=2.3.0->tensorflow===2.3.0) (1.0.1)\n",
+            "Requirement already satisfied: google-auth<2,>=1.6.3 in /usr/local/lib/python3.6/dist-packages (from tensorboard<3,>=2.3.0->tensorflow===2.3.0) (1.17.2)\n",
+            "Requirement already satisfied: importlib-metadata; python_version < \"3.8\" in /usr/local/lib/python3.6/dist-packages (from markdown>=2.6.8->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (3.3.0)\n",
+            "Requirement already satisfied: requests-oauthlib>=0.7.0 in /usr/local/lib/python3.6/dist-packages (from google-auth-oauthlib<0.5,>=0.4.1->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (1.3.0)\n",
+            "Requirement already satisfied: idna<3,>=2.5 in /usr/local/lib/python3.6/dist-packages (from requests<3,>=2.21.0->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (2.10)\n",
+            "Requirement already satisfied: chardet<4,>=3.0.2 in /usr/local/lib/python3.6/dist-packages (from requests<3,>=2.21.0->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (3.0.4)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.6/dist-packages (from requests<3,>=2.21.0->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (2020.12.5)\n",
+            "Requirement already satisfied: urllib3!=1.25.0,!=1.25.1,<1.26,>=1.21.1 in /usr/local/lib/python3.6/dist-packages (from requests<3,>=2.21.0->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (1.24.3)\n",
+            "Requirement already satisfied: rsa<5,>=3.1.4; python_version >= \"3\" in /usr/local/lib/python3.6/dist-packages (from google-auth<2,>=1.6.3->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (4.6)\n",
+            "Requirement already satisfied: cachetools<5.0,>=2.0.0 in /usr/local/lib/python3.6/dist-packages (from google-auth<2,>=1.6.3->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (4.2.0)\n",
+            "Requirement already satisfied: pyasn1-modules>=0.2.1 in /usr/local/lib/python3.6/dist-packages (from google-auth<2,>=1.6.3->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (0.2.8)\n",
+            "Requirement already satisfied: zipp>=0.5 in /usr/local/lib/python3.6/dist-packages (from importlib-metadata; python_version < \"3.8\"->markdown>=2.6.8->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (3.4.0)\n",
+            "Requirement already satisfied: typing-extensions>=3.6.4; python_version < \"3.8\" in /usr/local/lib/python3.6/dist-packages (from importlib-metadata; python_version < \"3.8\"->markdown>=2.6.8->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (3.7.4.3)\n",
+            "Requirement already satisfied: oauthlib>=3.0.0 in /usr/local/lib/python3.6/dist-packages (from requests-oauthlib>=0.7.0->google-auth-oauthlib<0.5,>=0.4.1->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (3.1.0)\n",
+            "Requirement already satisfied: pyasn1>=0.1.3 in /usr/local/lib/python3.6/dist-packages (from rsa<5,>=3.1.4; python_version >= \"3\"->google-auth<2,>=1.6.3->tensorboard<3,>=2.3.0->tensorflow===2.3.0) (0.4.8)\n",
+            "\u001b[31mERROR: datascience 0.10.6 has requirement folium==0.2.1, but you'll have folium 0.8.3 which is incompatible.\u001b[0m\n",
+            "\u001b[31mERROR: albumentations 0.1.12 has requirement imgaug<0.2.7,>=0.2.5, but you'll have imgaug 0.2.9 which is incompatible.\u001b[0m\n",
+            "Installing collected packages: tensorflow-estimator, numpy, tensorflow\n",
+            "  Found existing installation: tensorflow-estimator 2.4.0\n",
+            "    Uninstalling tensorflow-estimator-2.4.0:\n",
+            "      Successfully uninstalled tensorflow-estimator-2.4.0\n",
+            "  Found existing installation: numpy 1.19.4\n",
+            "    Uninstalling numpy-1.19.4:\n",
+            "      Successfully uninstalled numpy-1.19.4\n",
+            "  Found existing installation: tensorflow 2.4.0\n",
+            "    Uninstalling tensorflow-2.4.0:\n",
+            "      Successfully uninstalled tensorflow-2.4.0\n",
+            "Successfully installed numpy-1.18.5 tensorflow-2.3.0 tensorflow-estimator-2.3.0\n"
+          ],
+          "name": "stdout"
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "application/vnd.colab-display-data+json": {
+              "pip_warning": {
+                "packages": [
+                  "numpy"
+                ]
+              }
+            }
+          },
+          "metadata": {
+            "tags": []
+          }
+        },
+        {
+          "output_type": "stream",
+          "text": [
+            "\u001b[?25l\r\u001b[K     |██                              | 10kB 20.7MB/s eta 0:00:01\r\u001b[K     |███▉                            | 20kB 17.6MB/s eta 0:00:01\r\u001b[K     |█████▊                          | 30kB 10.2MB/s eta 0:00:01\r\u001b[K     |███████▋                        | 40kB 8.2MB/s eta 0:00:01\r\u001b[K     |█████████▌                      | 51kB 3.9MB/s eta 0:00:01\r\u001b[K     |███████████▍                    | 61kB 4.5MB/s eta 0:00:01\r\u001b[K     |█████████████▎                  | 71kB 4.9MB/s eta 0:00:01\r\u001b[K     |███████████████▏                | 81kB 5.2MB/s eta 0:00:01\r\u001b[K     |█████████████████               | 92kB 5.5MB/s eta 0:00:01\r\u001b[K     |███████████████████             | 102kB 4.3MB/s eta 0:00:01\r\u001b[K     |████████████████████▉           | 112kB 4.3MB/s eta 0:00:01\r\u001b[K     |██████████████████████▊         | 122kB 4.3MB/s eta 0:00:01\r\u001b[K     |████████████████████████▊       | 133kB 4.3MB/s eta 0:00:01\r\u001b[K     |██████████████████████████▋     | 143kB 4.3MB/s eta 0:00:01\r\u001b[K     |████████████████████████████▌   | 153kB 4.3MB/s eta 0:00:01\r\u001b[K     |██████████████████████████████▍ | 163kB 4.3MB/s eta 0:00:01\r\u001b[K     |████████████████████████████████| 174kB 4.3MB/s \n",
+            "\u001b[?25h"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "zPHuHLAQTw0F"
+      },
+      "source": [
+        "import tensorflow as tf\r\n",
+        "import argparse\r\n",
+        "import numpy as np\r\n",
+        "from tensorflow import keras\r\n",
+        "import pandas as pd\r\n",
+        "import os\r\n",
+        "from scipy import signal\r\n",
+        "#import tensorflow_model_optimization as tfmot\r\n",
+        "import tensorflow.lite as tflite\r\n",
+        "#from tensorflow_model_optimization.python.core.api.sparsity import keras as sparsity\r\n",
+        "import zlib\r\n",
+        "import sys\r\n",
+        "import shutil\r\n",
+        "\r\n",
+        "parser = argparse.ArgumentParser()\r\n",
+        "#parser.add_argument('--version', type=str, required=True, help='Version of the model')\r\n",
+        "\r\n",
+        "\r\n",
+        "\r\n",
+        "args, _ = parser.parse_known_args()\r\n",
+        "\r\n",
+        "version = \"c\" #args.version\r\n",
+        "\r\n",
+        "seed = 42\r\n",
+        "tf.random.set_seed(seed)\r\n",
+        "np.random.seed(seed)\r\n",
+        "\r\n",
+        "sampling_rate = 16000\r\n",
+        "\r\n",
+        "\r\n",
+        "\r\n",
+        "alpha = 0.25\r\n",
+        "frame_length = 320\r\n",
+        "frame_step = 161\r\n",
+        "resampling_rate = 8000\r\n",
+        "\r\n",
+        "\r\n",
+        "\r\n",
+        "ROOT_DIR = \"./\"\r\n",
+        "dataset_dir= ROOT_DIR + 'kws_test_{}'.format(version)\r\n",
+        "saved_model_dir = './models/kws'\r\n",
+        "tflite_model_dir = './Group1_kws_{}.tflite.zlib'.format(version)\r\n",
+        "uncompressed_dir= './Group1_kws_{}.tflite'.format(version)\r\n",
+        "\r\n",
+        "zip_path = tf.keras.utils.get_file(\r\n",
+        "        origin=\"http://storage.googleapis.com/download.tensorflow.org/data/mini_speech_commands.zip\",\r\n",
+        "        fname='mini_speech_commands.zip',\r\n",
+        "        extract=True,\r\n",
+        "        cache_dir='.', cache_subdir='data')\r\n",
+        "\r\n",
+        "data_dir = os.path.join('.', 'data', 'mini_speech_commands')\r\n",
+        "filenames = tf.io.gfile.glob(str(data_dir) + '/*/*')\r\n",
+        "filenames = tf.random.shuffle(filenames)\r\n",
+        "\r\n",
+        "\r\n",
+        "\r\n",
+        "\r\n",
+        "\r\n",
+        "\r\n",
+        "\r\n",
+        "\r\n"
+      ],
+      "execution_count": 8,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "k9EU0RjPUbDf"
+      },
+      "source": [
+        "\r\n",
+        "train =  tf.convert_to_tensor(pd.read_csv('https://raw.githubusercontent.com/RoboTuan/ML4IOT_HMW/main/HMW2/kws_train_split.txt', header=None))\r\n",
+        "validation =  tf.convert_to_tensor(pd.read_csv('https://raw.githubusercontent.com/RoboTuan/ML4IOT_HMW/main/HMW2/kws_val_split.txt', header=None))\r\n",
+        "test =  tf.convert_to_tensor(pd.read_csv('https://raw.githubusercontent.com/RoboTuan/ML4IOT_HMW/main/HMW2/kws_test_split.txt', header=None))\r\n",
+        "\r\n",
+        "train= tf.squeeze(train)\r\n",
+        "validation= tf.squeeze(validation)\r\n",
+        "test= tf.squeeze(test)\r\n",
+        "\r\n",
+        "train_files = train\r\n",
+        "val_files = validation\r\n",
+        "test_files = test\r\n",
+        "\r\n",
+        "LABELS = ['right', 'go', 'no', 'left', 'stop', 'up', 'down', 'yes']"
+      ],
+      "execution_count": 3,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "dbrEoxs6UcUE"
+      },
+      "source": [
+        "\r\n",
+        "#Data preprocessing\r\n",
+        "class SignalGenerator:\r\n",
+        "    def __init__(self, labels, sampling_rate, frame_length, frame_step,\r\n",
+        "            num_mel_bins=None, lower_frequency=None, upper_frequency=None,\r\n",
+        "            num_coefficients=None, mfcc=False, resampling_rate = None):\r\n",
+        "\r\n",
+        "        self.labels = labels\r\n",
+        "\r\n",
+        "        self.sampling_rate = sampling_rate\r\n",
+        "        self.resampling_rate = resampling_rate\r\n",
+        "\r\n",
+        "        self.frame_length = frame_length\r\n",
+        "        self.frame_step = frame_step\r\n",
+        "\r\n",
+        "        self.lower_frequency = lower_frequency\r\n",
+        "        self.upper_frequency = upper_frequency\r\n",
+        "\r\n",
+        "        self.num_mel_bins = num_mel_bins\r\n",
+        "        self.num_coefficients = num_coefficients\r\n",
+        "\r\n",
+        "        num_spectrogram_bins = (frame_length) // 2 + 1\r\n",
+        "\r\n",
+        "\r\n",
+        "        if self.resampling_rate is not None:\r\n",
+        "            rate = self.resampling_rate\r\n",
+        "\r\n",
+        "        else:\r\n",
+        "            rate = self.sampling_rate\r\n",
+        "           \r\n",
+        "        if mfcc is True:\r\n",
+        "            self.linear_to_mel_weight_matrix = tf.signal.linear_to_mel_weight_matrix(\r\n",
+        "                    self.num_mel_bins, num_spectrogram_bins, rate,\r\n",
+        "                    self.lower_frequency, self.upper_frequency)\r\n",
+        "            self.preprocess = self.preprocess_with_mfcc\r\n",
+        "        else:\r\n",
+        "            self.preprocess = self.preprocess_with_stft\r\n",
+        "\r\n",
+        "\r\n",
+        "    def custom_resampling(self, audio):\r\n",
+        "        audio = signal.resample_poly(audio, 1, self.sampling_rate // self.resampling_rate)\r\n",
+        "        audio = tf.convert_to_tensor(audio, dtype=tf.float32)\r\n",
+        "        return audio\r\n",
+        "\r\n",
+        "    def read(self, file_path):\r\n",
+        "        parts = tf.strings.split(file_path, os.path.sep)\r\n",
+        "        label = parts[-2]\r\n",
+        "        label_id = tf.argmax(label == self.labels)\r\n",
+        "        audio_binary = tf.io.read_file(file_path)\r\n",
+        "        audio, _ = tf.audio.decode_wav(audio_binary)\r\n",
+        "        audio = tf.squeeze(audio, axis=1)\r\n",
+        "\r\n",
+        "        if self.resampling_rate is not None:\r\n",
+        "            audio = tf.numpy_function(self.custom_resampling, [audio], tf.float32)\r\n",
+        "\r\n",
+        "        return audio, label_id\r\n",
+        "\r\n",
+        "\r\n",
+        "    def pad(self, audio):\r\n",
+        "        if self.resampling_rate is not None:\r\n",
+        "            rate = self.resampling_rate\r\n",
+        "        else:\r\n",
+        "            rate = self.sampling_rate\r\n",
+        "        zero_padding = tf.zeros([rate] - tf.shape(audio), dtype=tf.float32)\r\n",
+        "        audio = tf.concat([audio, zero_padding], 0)\r\n",
+        "        audio.set_shape([rate])\r\n",
+        "\r\n",
+        "        return audio\r\n",
+        "\r\n",
+        "    def get_spectrogram(self, audio):\r\n",
+        "        stft = tf.signal.stft(audio, frame_length=self.frame_length,\r\n",
+        "                frame_step=self.frame_step, fft_length=self.frame_length)\r\n",
+        "        spectrogram = tf.abs(stft)\r\n",
+        "\r\n",
+        "        return spectrogram\r\n",
+        "\r\n",
+        "    def get_mfccs(self, spectrogram):\r\n",
+        "        mel_spectrogram = tf.tensordot(spectrogram,\r\n",
+        "                self.linear_to_mel_weight_matrix, 1)\r\n",
+        "        log_mel_spectrogram = tf.math.log(mel_spectrogram + 1.e-6)\r\n",
+        "        mfccs = tf.signal.mfccs_from_log_mel_spectrograms(log_mel_spectrogram)\r\n",
+        "        mfccs = mfccs[..., :self.num_coefficients]\r\n",
+        "\r\n",
+        "        return mfccs\r\n",
+        "\r\n",
+        "    def preprocess_with_stft(self, file_path):\r\n",
+        "        audio, label = self.read(file_path)\r\n",
+        "        audio = self.pad(audio)\r\n",
+        "        spectrogram = self.get_spectrogram(audio)\r\n",
+        "        spectrogram = tf.expand_dims(spectrogram, -1)\r\n",
+        "        spectrogram = tf.image.resize(spectrogram, [32, 32])\r\n",
+        "\r\n",
+        "        return spectrogram, label\r\n",
+        "\r\n",
+        "    def preprocess_with_mfcc(self, file_path):\r\n",
+        "        audio, label = self.read(file_path)\r\n",
+        "        audio = self.pad(audio)\r\n",
+        "        spectrogram = self.get_spectrogram(audio)\r\n",
+        "        mfccs = self.get_mfccs(spectrogram)\r\n",
+        "        mfccs = tf.expand_dims(mfccs, -1)\r\n",
+        "\r\n",
+        "        return mfccs, label\r\n",
+        "\r\n",
+        "    def make_dataset(self, files, train):\r\n",
+        "        ds = tf.data.Dataset.from_tensor_slices(files)\r\n",
+        "        ds = ds.map(self.preprocess, num_parallel_calls=4)\r\n",
+        "        ds = ds.batch(32)\r\n",
+        "        ds = ds.cache()\r\n",
+        "        if train is True:\r\n",
+        "            ds = ds.shuffle(100, reshuffle_each_iteration=True)\r\n",
+        "\r\n",
+        "        return ds\r\n",
+        "\r\n",
+        "\r\n",
+        "\r\n",
+        "MFCC_OPTIONS = {'frame_length': frame_length, 'frame_step': frame_step, 'mfcc': True,\r\n",
+        "        'lower_frequency': 20, 'upper_frequency': 4000, 'num_mel_bins': 40,\r\n",
+        "        'num_coefficients': 10}\r\n",
+        "\r\n",
+        "\r\n",
+        "options = MFCC_OPTIONS\r\n",
+        "strides = [2, 1]\r\n",
+        "units = 8"
+      ],
+      "execution_count": 4,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "GSPQ59CBVOnh"
+      },
+      "source": [
+        "generator = SignalGenerator(LABELS, sampling_rate=sampling_rate, resampling_rate=resampling_rate, **options)\r\n",
+        "train_ds = generator.make_dataset(train_files, True)\r\n",
+        "val_ds = generator.make_dataset(val_files, False)\r\n",
+        "test_ds = generator.make_dataset(test_files, False)\r\n",
+        "\r\n",
+        "\r\n",
+        "if os.path.exists(dataset_dir):\r\n",
+        "    shutil.rmtree(dataset_dir)\r\n",
+        "\r\n",
+        "tf.data.experimental.save(test_ds, dataset_dir)"
+      ],
+      "execution_count": 5,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 35
+        },
+        "id": "dprp62P0nQbY",
+        "outputId": "702034d4-7b6a-4676-dc81-a671de531e76"
+      },
+      "source": [
+        "import tensorflow as tf\n",
+        "tf.__version__"
+      ],
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "string"
+            },
+            "text/plain": [
+              "'2.3.0'"
+            ]
+          },
+          "metadata": {
+            "tags": []
+          },
+          "execution_count": 6
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "W6hIKNYvV4r8",
+        "outputId": "38f2464f-0d49-4c73-9c1e-070984fdddd3"
+      },
+      "source": [
+        "# Model selection and trainig\r\n",
+        "model = keras.Sequential([\r\n",
+        "    keras.layers.Conv2D(filters=int(alpha*256), kernel_size=[3, 3], strides=strides, use_bias=False),\r\n",
+        "    keras.layers.BatchNormalization(momentum=0.1),\r\n",
+        "    keras.layers.ReLU(),\r\n",
+        "    keras.layers.DepthwiseConv2D(kernel_size=[3,3],strides=[1, 1], use_bias=False),\r\n",
+        "    keras.layers.Conv2D(filters=int(alpha*256), kernel_size=[1, 1], strides=[1,1], use_bias=False),\r\n",
+        "    keras.layers.BatchNormalization(momentum=0.1),\r\n",
+        "    keras.layers.ReLU(),\r\n",
+        "    keras.layers.DepthwiseConv2D(kernel_size=[3,3], strides=[1, 1], use_bias=False),\r\n",
+        "    keras.layers.Conv2D(filters=int(alpha*256), kernel_size=[1, 1], strides=[1, 1], use_bias=False),\r\n",
+        "    keras.layers.BatchNormalization(momentum=0.1),\r\n",
+        "    keras.layers.ReLU(),\r\n",
+        "    keras.layers.GlobalAveragePooling2D(),\r\n",
+        "    keras.layers.Dense(units=8)\r\n",
+        "    ])\r\n",
+        "\r\n",
+        "\r\n",
+        "model.compile(optimizer='adam',\r\n",
+        "            loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),\r\n",
+        "            metrics=['accuracy'])\r\n",
+        "\r\n",
+        "history = model.fit(\r\n",
+        "    train_ds,\r\n",
+        "    epochs=20,\r\n",
+        "    batch_size=32,\r\n",
+        "    validation_data=val_ds,\r\n",
+        "    )\r\n",
+        "\r\n",
+        "print(\"Test accuracy:\")\r\n",
+        "test_accuracy= model.evaluate(test_ds)\r\n",
+        "\r\n",
+        "model.save(saved_model_dir)\r\n",
+        "\r\n",
+        "\r\n",
+        "# Post training quantization and tflite conversion\r\n",
+        "converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)\r\n",
+        "converter.optimizations = [tf.lite.Optimize.DEFAULT]\r\n",
+        "tflite_model = converter.convert()\r\n",
+        "\r\n",
+        "\r\n",
+        "# Compression and saving\r\n",
+        "with open(tflite_model_dir, 'wb') as fp:\r\n",
+        "    tflite_compressed = zlib.compress(tflite_model)\r\n",
+        "    fp.write(tflite_compressed)\r\n",
+        "\r\n",
+        "print(f\"Size of compressed tflite model: {os.path.getsize(tflite_model_dir)/1024} kB\")"
+      ],
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "text": [
+            "Epoch 1/20\n",
+            "200/200 [==============================] - 57s 287ms/step - loss: 1.6884 - accuracy: 0.4728 - val_loss: 1.2969 - val_accuracy: 0.6562\n",
+            "Epoch 2/20\n",
+            "200/200 [==============================] - 7s 33ms/step - loss: 1.1348 - accuracy: 0.6925 - val_loss: 0.9071 - val_accuracy: 0.7375\n",
+            "Epoch 3/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.8364 - accuracy: 0.7769 - val_loss: 0.7064 - val_accuracy: 0.7900\n",
+            "Epoch 4/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.6613 - accuracy: 0.8200 - val_loss: 0.6085 - val_accuracy: 0.8313\n",
+            "Epoch 5/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.5526 - accuracy: 0.8536 - val_loss: 0.4942 - val_accuracy: 0.8600\n",
+            "Epoch 6/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.4753 - accuracy: 0.8689 - val_loss: 0.4924 - val_accuracy: 0.8500\n",
+            "Epoch 7/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.4233 - accuracy: 0.8772 - val_loss: 0.4100 - val_accuracy: 0.8913\n",
+            "Epoch 8/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.3817 - accuracy: 0.8936 - val_loss: 0.3802 - val_accuracy: 0.9038\n",
+            "Epoch 9/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.3501 - accuracy: 0.9002 - val_loss: 0.3549 - val_accuracy: 0.8975\n",
+            "Epoch 10/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.3203 - accuracy: 0.9106 - val_loss: 0.3664 - val_accuracy: 0.8813\n",
+            "Epoch 11/20\n",
+            "200/200 [==============================] - 7s 33ms/step - loss: 0.2979 - accuracy: 0.9175 - val_loss: 0.3438 - val_accuracy: 0.8925\n",
+            "Epoch 12/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.2813 - accuracy: 0.9192 - val_loss: 0.3432 - val_accuracy: 0.9013\n",
+            "Epoch 13/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.2641 - accuracy: 0.9239 - val_loss: 0.3588 - val_accuracy: 0.8975\n",
+            "Epoch 14/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.2483 - accuracy: 0.9284 - val_loss: 0.3197 - val_accuracy: 0.8975\n",
+            "Epoch 15/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.2378 - accuracy: 0.9292 - val_loss: 0.2947 - val_accuracy: 0.9187\n",
+            "Epoch 16/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.2215 - accuracy: 0.9356 - val_loss: 0.3246 - val_accuracy: 0.9050\n",
+            "Epoch 17/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.2126 - accuracy: 0.9370 - val_loss: 0.2912 - val_accuracy: 0.9075\n",
+            "Epoch 18/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.2037 - accuracy: 0.9416 - val_loss: 0.3326 - val_accuracy: 0.9050\n",
+            "Epoch 19/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.1955 - accuracy: 0.9414 - val_loss: 0.2770 - val_accuracy: 0.9112\n",
+            "Epoch 20/20\n",
+            "200/200 [==============================] - 7s 34ms/step - loss: 0.1863 - accuracy: 0.9467 - val_loss: 0.2837 - val_accuracy: 0.9175\n",
+            "Test accuracy:\n",
+            "25/25 [==============================] - 0s 8ms/step - loss: 0.3179 - accuracy: 0.9062\n",
+            "WARNING:tensorflow:From /usr/local/lib/python3.6/dist-packages/tensorflow/python/training/tracking/tracking.py:111: Model.state_updates (from tensorflow.python.keras.engine.training) is deprecated and will be removed in a future version.\n",
+            "Instructions for updating:\n",
+            "This property should not be used in TensorFlow 2.0, as updates are applied automatically.\n",
+            "WARNING:tensorflow:From /usr/local/lib/python3.6/dist-packages/tensorflow/python/training/tracking/tracking.py:111: Layer.updates (from tensorflow.python.keras.engine.base_layer) is deprecated and will be removed in a future version.\n",
+            "Instructions for updating:\n",
+            "This property should not be used in TensorFlow 2.0, as updates are applied automatically.\n",
+            "INFO:tensorflow:Assets written to: ./models/kws/assets\n",
+            "Size of compressed tflite model: 18.2607421875 kB\n"
+          ],
+          "name": "stdout"
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "HSisRDO2oNTk"
+      },
+      "source": [
+        "#save uncompressed model\r\n",
+        "\r\n",
+        "with open(uncompressed_dir, 'wb') as fp:\r\n",
+        "    #tflite_compressed = zlib.compress(tflite_model)\r\n",
+        "    fp.write(tflite_model)\r\n"
+      ],
+      "execution_count": 9,
+      "outputs": []
+    }
+  ]
+}
