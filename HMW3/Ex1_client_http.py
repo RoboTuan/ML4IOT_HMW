@@ -1,3 +1,10 @@
+import subprocess
+
+performance = ['sudo', 'sh', '-c', 'echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor']
+powersave = ['sudo', 'sh', '-c', 'echo powersave > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor']
+
+subprocess.check_call(performance)
+
 import tensorflow as tf
 import tensorflow.lite as tflite
 import base64
@@ -19,11 +26,12 @@ seed = 42
 tf.random.set_seed(seed)
 np.random.seed(seed)
 
-threshold = 0.2
+threshold = 0.3
 
 sampling_rate = 16000
 resampling_rate = 8000
 frame_length = 320
+# ele aveva messo 161
 frame_step = 161
 #tensor_spec_dimension = [None, 49, 10, 1]
 
@@ -146,7 +154,7 @@ class preprocess:
         spectrogram = self.get_spectrogram(audio)
         mfccs = self.get_mfccs(spectrogram)
         # Reshaping since only 1 audio at time si given for inference 
-        print(1, self.num_frames, self.num_coefficients)
+        #print(1, self.num_frames, self.num_coefficients)
         mfccs = tf.reshape(mfccs, [1, self.num_frames, self.num_coefficients, 1])
         #mfccs = tf.expand_dims(mfccs, -1)
 
@@ -196,7 +204,7 @@ def success_checker(predictions, threshold):
 
     pred_probs = tf.sort(pred_probs, direction='DESCENDING')
     score_margin = pred_probs[0] - pred_probs[1]
-    if score_margin > threshold:
+    if score_margin < threshold:
         return True
     else:
         return False
@@ -204,6 +212,7 @@ def success_checker(predictions, threshold):
 
 accuracy = 0
 count = 0
+com_size = 0
 for file_path in test_files:
     parts = tf.strings.split(file_path, os.path.sep)
     label = parts[-2]
@@ -251,12 +260,15 @@ for file_path in test_files:
             ]
         }
 
+        com_size += len(json.dumps(body))
+
         r = requests.put(url, json=body)
 
         if r.status_code == 200:
             #print("little: ", np.argmax(y_pred))
             rbody = r.json()
             #TODO: do stuff
+            print("prediction done in big")
             y_pred = int(rbody['predicted_label'])
             #print("Big: ", y_pred, type(y_pred))
             #sys.exit()
@@ -281,8 +293,7 @@ for file_path in test_files:
 
 accuracy/=float(count)
 print("Accuracy: {}".format(accuracy*100))
-
-    
+print("Comunication size: {} MB".format(com_size/(2**20)))
 
     
 

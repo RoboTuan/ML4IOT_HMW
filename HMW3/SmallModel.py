@@ -31,6 +31,7 @@ sampling_rate = 16000
 
 alpha = 0.25
 frame_length = 320
+# ele aveva messo 161
 frame_step = 161
 resampling_rate = 8000
 
@@ -196,10 +197,6 @@ generator = SignalGenerator(LABELS, sampling_rate=sampling_rate, resampling_rate
 train_ds = generator.make_dataset(train_files, True)
 val_ds = generator.make_dataset(val_files, False)
 test_ds = generator.make_dataset(test_files, False)
-
-for data in train_ds:
-    print(data[0].shape)
-    sys.exit()
 
 
 if os.path.exists(dataset_dir):

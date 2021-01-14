@@ -25,8 +25,8 @@ parser.add_argument('--coeff', type=int, default=10,
 args = parser.parse_args()
 
 
-call('sudo sh -c "echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor"',
-            shell=True)
+# call('sudo sh -c "echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor"',
+#             shell=True)
 
 rate = args.rate
 length = args.length
