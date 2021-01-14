@@ -19,16 +19,16 @@ seed = 42
 tf.random.set_seed(seed)
 np.random.seed(seed)
 
-threshold = np.NaN
+threshold = 0.2
 
 sampling_rate = 16000
-resampling_rate = None
-frame_length = 640
-frame_step = 320
-tensor_spec_dimension = [None, 49, 10, 1]
+resampling_rate = 8000
+frame_length = 320
+frame_step = 161
+#tensor_spec_dimension = [None, 49, 10, 1]
 
-ROOT_DIR = "./"
-tfModel = "./Group1_kws_a.tflite.zlib"
+ROOT_DIR = "./HMW3/"
+tfModel = "./HMW3/small.tflite"
 url = "http://192.168.1.232:8080/"
 
 zip_path = tf.keras.utils.get_file(
@@ -44,9 +44,9 @@ filenames = tf.random.shuffle(filenames)
 test_files = tf.strings.split(tf.io.read_file(ROOT_DIR +'kws_test_split.txt'),sep='\n')[:-1]
 
 #TODO: labels provvisorie per debug, modificare con quelle successive,
-LABELS = ['right', 'go', 'no', 'left', 'stop', 'up', 'down', 'yes']
+#LABELS = ['right', 'go', 'no', 'left', 'stop', 'up', 'down', 'yes']
 # Labels prof
-# LABELS = ['down', 'stop', 'right', 'left', 'up', 'yes', 'no', 'go']
+LABELS = ['down', 'stop', 'right', 'left', 'up', 'yes', 'no', 'go']
 
 
 class preprocess:
@@ -70,14 +70,15 @@ class preprocess:
 
         num_spectrogram_bins = (frame_length) // 2 + 1
 
-        self.num_frames = (self.sampling_rate - self.frame_length) // self.frame_step + 1
-
 
         if self.resampling_rate is not None:
             rate = self.resampling_rate
 
         else:
             rate = self.sampling_rate
+        
+        
+        self.num_frames = (rate - self.frame_length) // self.frame_step + 1
            
         if mfcc is True:
             self.linear_to_mel_weight_matrix = tf.signal.linear_to_mel_weight_matrix(
@@ -145,6 +146,7 @@ class preprocess:
         spectrogram = self.get_spectrogram(audio)
         mfccs = self.get_mfccs(spectrogram)
         # Reshaping since only 1 audio at time si given for inference 
+        print(1, self.num_frames, self.num_coefficients)
         mfccs = tf.reshape(mfccs, [1, self.num_frames, self.num_coefficients, 1])
         #mfccs = tf.expand_dims(mfccs, -1)
 
@@ -183,8 +185,17 @@ def success_checker(predictions, threshold):
     """
         Return True if we need to send the audio file to the big model
     """
-    predictions = tf.sort(predictions, direction='DESCENDING')
-    score_margin = predictions[0] - predictions[1]
+    
+    if threshold > 1 or threshold < 0:
+        raise ValueError("The threshold must be a probability [0,1]")
+
+    #print(predictions)
+    pred_probs = tf.nn.softmax(predictions)
+    #print(pred_probs, tf.math.reduce_sum(pred_probs))
+    #sys.exit()
+
+    pred_probs = tf.sort(pred_probs, direction='DESCENDING')
+    score_margin = pred_probs[0] - pred_probs[1]
     if score_margin > threshold:
         return True
     else:
@@ -210,7 +221,7 @@ for file_path in test_files:
     y_pred = interpreter.get_tensor(output_details[0]['index'])
     y_pred = y_pred.squeeze()
 
-    BIG = success_checker(y_pred, 3)
+    BIG = success_checker(y_pred, threshold)
 
     #print(BIG)
 
