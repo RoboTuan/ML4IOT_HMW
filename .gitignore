@@ -9,6 +9,8 @@
 *.zlib
 *.txt
 
+__pycache__
+
 data/
 models/
 th_test/
