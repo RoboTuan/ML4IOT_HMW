@@ -5,7 +5,6 @@ from tensorflow import keras
 import pandas as pd
 import os
 from scipy import signal
-import tensorflow_model_optimization as tfmot
 import tensorflow.lite as tflite
 import zlib
 import sys
@@ -240,7 +239,7 @@ elif version == "little":
         keras.layers.GlobalAveragePooling2D(),
         keras.layers.Dense(units=8)
         ])
-        
+
 else:
     print("Bad model name")
     sys.exit()
