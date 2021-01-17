@@ -32,7 +32,7 @@ dataset_dir = './kws_test_{}'.format(version)
 mfcc = True
 
 if version=="big":
-    tensor_spec_dimension = [None, 48, 10, 1]
+    tensor_spec_dimension = [None, 49, 10, 1]
 else:
     tensor_spec_dimension = [None, 65, 10, 1]
 
