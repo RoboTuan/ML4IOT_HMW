@@ -30,11 +30,13 @@ if version == "big":
     frame_length = 640
     frame_step = 320
     resampling_rate = None
+
 elif version == "little":
     alpha = 0.25
     frame_length = 320
     frame_step = 161
     resampling_rate = 8000
+
 else:
     print("Bad model name")
     sys.exit()
@@ -221,6 +223,7 @@ if version == "big":
         keras.layers.GlobalAveragePooling2D(),
         keras.layers.Dense(units=8)
     ])
+    
 elif version == "little":
     model = keras.Sequential([
         keras.layers.Conv2D(filters=int(alpha*256), kernel_size=[3, 3], strides=strides, use_bias=False),
@@ -237,6 +240,7 @@ elif version == "little":
         keras.layers.GlobalAveragePooling2D(),
         keras.layers.Dense(units=8)
         ])
+        
 else:
     print("Bad model name")
     sys.exit()
