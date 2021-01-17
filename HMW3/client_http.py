@@ -10,33 +10,26 @@ import tensorflow.lite as tflite
 import base64
 import datetime
 import requests
-from io import BytesIO
 import numpy as np
 from scipy import signal
-import wave
-import argparse
-import time
 import json
 import zlib
 import sys
 import os
-import shutil
 
 seed = 42
 tf.random.set_seed(seed)
 np.random.seed(seed)
 
-threshold = 0.3
+threshold = 0.4
 
 sampling_rate = 16000
 resampling_rate = 8000
-frame_length = 320
-# ele aveva messo 161
-frame_step = 161
-#tensor_spec_dimension = [None, 49, 10, 1]
+frame_length = 240
+frame_step = 120
 
-ROOT_DIR = "./HMW3/"
-tfModel = "./HMW3/small.tflite"
+ROOT_DIR = "./"
+tfModel = "./little.tflite.zlib"
 url = "http://192.168.1.232:8080/"
 
 zip_path = tf.keras.utils.get_file(
@@ -51,9 +44,6 @@ filenames = tf.random.shuffle(filenames)
 
 test_files = tf.strings.split(tf.io.read_file(ROOT_DIR +'kws_test_split.txt'),sep='\n')[:-1]
 
-#TODO: labels provvisorie per debug, modificare con quelle successive,
-#LABELS = ['right', 'go', 'no', 'left', 'stop', 'up', 'down', 'yes']
-# Labels prof
 LABELS = ['down', 'stop', 'right', 'left', 'up', 'yes', 'no', 'go']
 
 
@@ -197,10 +187,7 @@ def success_checker(predictions, threshold):
     if threshold > 1 or threshold < 0:
         raise ValueError("The threshold must be a probability [0,1]")
 
-    #print(predictions)
     pred_probs = tf.nn.softmax(predictions)
-    #print(pred_probs, tf.math.reduce_sum(pred_probs))
-    #sys.exit()
 
     pred_probs = tf.sort(pred_probs, direction='DESCENDING')
     score_margin = pred_probs[0] - pred_probs[1]
@@ -209,6 +196,7 @@ def success_checker(predictions, threshold):
     else:
         return False
 
+counter_big = 0
 
 accuracy = 0
 count = 0
@@ -217,7 +205,6 @@ for file_path in test_files:
     parts = tf.strings.split(file_path, os.path.sep)
     label = parts[-2]
     label_id = tf.argmax(label == LABELS)
-    #print(file_path, label, label_id)
     audio_binary = tf.io.read_file(file_path)
     mfccs = Preprocess.preprocess_with_mfcc(audio_binary)
     input_tensor = mfccs
@@ -232,19 +219,18 @@ for file_path in test_files:
 
     BIG = success_checker(y_pred, threshold)
 
-    #print(BIG)
 
     if BIG is True:
+
+        counter_big += 1
+
         now = datetime.datetime.now()
         timestamp = int(now.timestamp())
 
         
-
-        #TODO:vedere come transformare un tensore in stringa base64
         audio_bytes = audio_binary.numpy()
         audio_b64bytes = base64.b64encode(audio_bytes)
         audio_string = audio_b64bytes.decode()
-        #print(type(audio_string))
 
         body = {
             # my url
@@ -265,20 +251,13 @@ for file_path in test_files:
         r = requests.put(url, json=body)
 
         if r.status_code == 200:
-            #print("little: ", np.argmax(y_pred))
             rbody = r.json()
-            #TODO: do stuff
-            print("prediction done in big")
             y_pred = int(rbody['predicted_label'])
-            #print("Big: ", y_pred, type(y_pred))
-            #sys.exit()
 
         else:
             #TODO: say what error
             print("Error")
             print(r.text)
-
-    
 
     else:
         y_pred = np.argmax(y_pred)
@@ -288,12 +267,11 @@ for file_path in test_files:
     accuracy += y_pred == y_true
     count += 1
 
-    # if count == 4:
-    #     sys.exit()
 
 accuracy/=float(count)
 print("Accuracy: {}".format(accuracy*100))
 print("Comunication size: {} MB".format(com_size/(2**20)))
+print("Calls to big model: ", counter_big)
 
     
 
