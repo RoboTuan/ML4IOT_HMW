@@ -9,9 +9,14 @@ import argparse
 import numpy as np
 import tensorflow.lite as tflite
 import tensorflow as tf
+import numpy as np
 import zlib
 import os
 import sys
+
+seed = 42
+tf.random.set_seed(seed)
+np.random.seed(seed)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--version', type=str, required=True, help='Version of the model')
@@ -26,10 +31,10 @@ tfModel = compressed_tfModel
 dataset_dir = './kws_test_{}'.format(version)
 mfcc = True
 
-if mfcc is True:
-    tensor_spec_dimension = [None, 49, 10, 1]
+if version=="big":
+    tensor_spec_dimension = [None, 48, 10, 1]
 else:
-    tensor_spec_dimension = [None,32,32,1]
+    tensor_spec_dimension = [None, 65, 10, 1]
 
 # Decompress it
 
@@ -42,10 +47,7 @@ print(input_details)
 
 input_shape = input_details[0]['shape']
 
-if mfcc is True:
-    tensor_spec =(tf.TensorSpec(tensor_spec_dimension, dtype=tf.float32), tf.TensorSpec([None], dtype=tf.int64))
-else:
-    tensor_spec =(tf.TensorSpec(tensor_spec_dimension, dtype=tf.float32), tf.TensorSpec([None], dtype=tf.int64))
+tensor_spec =(tf.TensorSpec(tensor_spec_dimension, dtype=tf.float32), tf.TensorSpec([None], dtype=tf.int64))
 
 test_ds = tf.data.experimental.load(dataset_dir, tensor_spec) 
 test_ds= test_ds.unbatch().batch(1)
