@@ -49,7 +49,7 @@ class InferenceClient(DoSomething):
             #print(input_tensor, input_tensor.shape)
 
             #get the nn from file
-            interpreter = tflite.Interpreter(model_path="./HMW3/big.tflite")
+            interpreter = tflite.Interpreter(model_path="./big.tflite")
             interpreter.allocate_tensors()
             input_details = interpreter.get_input_details()
             output_details = interpreter.get_output_details()
