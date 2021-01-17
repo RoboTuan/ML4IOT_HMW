@@ -25,7 +25,7 @@ np.random.seed(seed)
 sampling_rate = 16000
 
 if version == "big":
-    alpha = 1
+    alpha = 1.5
     frame_length = 640
     frame_step = 320
     resampling_rate = None
