@@ -14,16 +14,16 @@ import os
 import sys
 
 parser = argparse.ArgumentParser()
-#parser.add_argument('--version', type=str, required=True, help='Version of the model')
+parser.add_argument('--version', type=str, required=True, help='Version of the model')
 
-#args, _ = parser.parse_known_args()
+args, _ = parser.parse_known_args()
 
-#version = args.version
+version = args.version
 
 
-compressed_tfModel = './HMW3/big.tflite'
+compressed_tfModel = './{}.tflite'.format(version)
 tfModel = compressed_tfModel
-dataset_dir = 'HMW3/kws_test_c'
+dataset_dir = './kws_test_{}'.format(version)
 mfcc = True
 
 if mfcc is True:
@@ -32,15 +32,7 @@ else:
     tensor_spec_dimension = [None,32,32,1]
 
 # Decompress it
-'''
-str_object1 = open(tfModel, 'rb').read()
-str_object2 = zlib.decompress(str_object1)
-tfModel = tfModel.replace('.zlib', '')
 
-f = open(tfModel, 'wb')
-f.write(str_object2)
-f.close()
-'''
 interpreter = tflite.Interpreter(model_path=tfModel)
 interpreter.allocate_tensors()
 
