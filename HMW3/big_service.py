@@ -13,7 +13,7 @@ class BigModel(object):
     exposed = True
 
     def __init__(self):
-        big_model_path = "./HMW3/big.tflite"
+        big_model_path = "./big.tflite"
 
         self.interpreter = tflite.Interpreter(model_path=big_model_path)
         self.interpreter.allocate_tensors()
@@ -97,8 +97,6 @@ class BigModel(object):
         y_pred = self.interpreter.get_tensor(self.output_details[0]['index'])
         y_pred = y_pred.squeeze()
         y_pred = np.argmax(y_pred)
-
-        print("Big script:", y_pred)
 
         output_body = {
             'predicted_label': str(y_pred)
