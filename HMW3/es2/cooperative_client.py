@@ -8,7 +8,11 @@ import os
 import json
 import base64
 import sys
+from subprocess import call
 from collections import defaultdict 
+
+call('sudo sh -c "echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor"',
+            shell=True)
 
 
 
@@ -72,13 +76,9 @@ class preprocess:
             rate = self.resampling_rate
         else:
             rate = self.sampling_rate
-        #print(audio.shape)
         zero_padding = tf.zeros([rate] - tf.shape(audio), dtype=tf.float32)
-        #print(zero_padding)
         audio = tf.concat([audio, zero_padding], 0)
-        #print(audio.shape)
         audio.set_shape([rate])
-        #print(audio.shape)
 
         return audio
 
@@ -112,7 +112,6 @@ class preprocess:
         audio = self.pad(audio)
         spectrogram = self.get_spectrogram(audio)
         mfccs = self.get_mfccs(spectrogram)
-        #print(mfccs.shape)
         # Reshaping since only 1 audio at time si given for inference 
         #print(1, self.num_frames, self.num_coefficients)
         mfccs = tf.reshape(mfccs, [1, self.num_frames, self.num_coefficients, 1])
@@ -125,7 +124,7 @@ class preprocess:
 class CooperativeClient(DoSomething):
     def __init__(self, clientID):
         super().__init__(clientID)
-        self.prova = []
+        # self.prova = []
         self.last_layer_client1 = []
         self.last_layer_client2 = []
         self.last_layer_client3 = []
@@ -185,7 +184,7 @@ if __name__ == "__main__":
     frame_length = 640
     frame_step = 320
 
-    ROOT_DIR = "./HMW3/"
+    ROOT_DIR = "./"
 
     zip_path = tf.keras.utils.get_file(
             origin="http://storage.googleapis.com/download.tensorflow.org/data/mini_speech_commands.zip",
@@ -228,9 +227,6 @@ if __name__ == "__main__":
         #print(input_tensor.shape, tf.reshape(input_tensor, [-1]).shape)
         y_true = label_id
 
-        # print(test.true_labels)
-        # print(test.last_layer_client1)
-        # print(test.last_layer_client2)
         # putting the true label to integer
         test.true_labels.append(int(y_true))
 
@@ -288,10 +284,6 @@ if __name__ == "__main__":
         # accuracy += y_pred == y_true
         count += 1
 
-        # if count == 4:
-        #     break
-
-        #print("Current accuracy: ", accuracy/float(count))
 
 
     # accuracy/=float(count)
@@ -302,12 +294,16 @@ if __name__ == "__main__":
     print(time.time()-start)
 
 
+    # tmp = time.time()
+    # while len(test.last_layer_client1) != count and len(test.last_layer_client2) != count and len(test.last_layer_client3) != count and len(test.last_layer_client3) != count:
+    #     #print(len(test.last_layer_dict_client1), len(test.last_layer_dict_client2), len(len(test.true_labels_dict.keys())))
+    #     #print(test.last_layer_client1)
+    #     time.sleep(0.1)
+    #     #print(test.last_layer_dict)
+    # print(time.time()-tmp)
 
-    while len(test.last_layer_client1) != count and len(test.last_layer_client2) != count:
-        #print(len(test.last_layer_dict_client1), len(test.last_layer_dict_client2), len(len(test.true_labels_dict.keys())))
-        #print(test.last_layer_client1)
-        time.sleep(0.1)
-        #print(test.last_layer_dict)
+    # wait for things, estimate this time with the immediately above commented code
+    time.sleep(1)
 
     body = {
         # my url
