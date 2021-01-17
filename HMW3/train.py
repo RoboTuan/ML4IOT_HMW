@@ -32,8 +32,8 @@ if version == "big":
 
 elif version == "little":
     alpha = 0.25
-    frame_length = 320
-    frame_step = 161
+    frame_length = 240
+    frame_step = 120
     resampling_rate = 8000
 
 else:
