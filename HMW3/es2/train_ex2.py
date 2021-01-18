@@ -11,13 +11,10 @@ import sys
 import shutil
 
 parser = argparse.ArgumentParser()
-#parser.add_argument('--version', type=int, required=True, help='Version of the model')
-
-
-
+parser.add_argument('--version', type=int, required=True, help='Version of the model')
 args, _ = parser.parse_known_args()
 
-version = 3  #args.version
+version = args.version
 
 seed = 42
 tf.random.set_seed(seed)
