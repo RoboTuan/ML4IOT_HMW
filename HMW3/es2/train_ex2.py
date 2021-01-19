@@ -281,13 +281,6 @@ converter = tf.lite.TFLiteConverter.from_saved_model(saved_model_dir)
 tflite_model = converter.convert()
 
 
-# Compression and saving
-with open(tflite_model_dir, 'wb') as fp:
-    tflite_compressed = zlib.compress(tflite_model)
-    fp.write(tflite_compressed)
-
-print(f"Size of compressed tflite model: {os.path.getsize(tflite_model_dir)/1024} kB")
-
 #save uncompressed model
 with open(uncompressed_dir, 'wb') as fp:
     fp.write(tflite_model)

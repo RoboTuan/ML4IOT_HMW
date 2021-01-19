@@ -31,7 +31,7 @@ tfModel = compressed_tfModel
 dataset_dir = './kws_test_{}'.format(version)
 mfcc = True
 
-if version=="big":
+if version=="big" or version=="1" or version=="2":
     tensor_spec_dimension = [None, 49, 10, 1]
 else:
     tensor_spec_dimension = [None, 65, 10, 1]

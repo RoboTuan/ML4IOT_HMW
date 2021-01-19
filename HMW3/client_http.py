@@ -29,8 +29,7 @@ frame_length = 240
 frame_step = 120
 
 ROOT_DIR = "./"
-#TODO: see if we have to pass a tflite or tflite.zip
-tfModel = "./little.tflite.zlib"
+tfModel = "./little.tflite"
 url = "http://192.168.1.232:8080/"
 
 zip_path = tf.keras.utils.get_file(
@@ -159,16 +158,6 @@ MFCC_OPTIONS = {'frame_length': frame_length, 'frame_step': frame_step, 'mfcc': 
 options = MFCC_OPTIONS
 
 Preprocess = preprocess(LABELS, sampling_rate=sampling_rate, resampling_rate=resampling_rate, **options)
-
-
-if ".zlib" in tfModel:
-    # Decompress it
-    str_object1 = open(tfModel, 'rb').read()
-    str_object2 = zlib.decompress(str_object1)
-    tfModel = tfModel.replace('.zlib', '')
-    f = open(tfModel, 'wb')
-    f.write(str_object2)
-    f.close()
 
 
 interpreter = tflite.Interpreter(model_path=tfModel)

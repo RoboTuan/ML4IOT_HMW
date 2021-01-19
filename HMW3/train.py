@@ -271,11 +271,12 @@ if version == "little":
 tflite_model = converter.convert()
 
 # Compression and saving
-with open(tflite_model_dir, 'wb') as fp:
-    tflite_compressed = zlib.compress(tflite_model)
-    fp.write(tflite_compressed)
+if version == "little":
+    with open(tflite_model_dir, 'wb') as fp:
+        tflite_compressed = zlib.compress(tflite_model)
+        fp.write(tflite_compressed)
 
-print(f"Size of compressed tflite model: {os.path.getsize(tflite_model_dir)/1024} kB")
+    print(f"Size of compressed tflite model: {os.path.getsize(tflite_model_dir)/1024} kB")
 
 
 #save uncompressed model
