@@ -245,7 +245,6 @@ for file_path in test_files:
             y_pred = int(rbody['predicted_label'])
 
         else:
-            #TODO: say what error
             print("Error")
             print(r.text)
 

@@ -239,7 +239,7 @@ elif version == 3:
         keras.layers.BatchNormalization(momentum=0.1),
         keras.layers.ReLU(),
         keras.layers.GlobalAveragePooling2D(),
-        keras.layers.Dense(units=8) #10 if silence
+        keras.layers.Dense(units=8) 
         ])
 else:
     print("Wrong version")
