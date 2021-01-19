@@ -1,3 +1,10 @@
+import subprocess
+
+performance = ['sudo', 'sh', '-c', 'echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor']
+powersave = ['sudo', 'sh', '-c', 'echo powersave > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor']
+
+subprocess.check_call(performance)
+
 from DoSomething import DoSomething
 import tensorflow as tf
 import numpy as np
@@ -8,12 +15,6 @@ import os
 import json
 import base64
 import sys
-from subprocess import call
-from collections import defaultdict 
-
-# call('sudo sh -c "echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor"',
-#             shell=True)
-
 
 
 class preprocess:
@@ -232,8 +233,6 @@ if __name__ == "__main__":
         count += 1
 
 
-    print(time.time()-start)
-
     tmp = time.time()
     while len(test.last_layer_client1) != count and len(test.last_layer_client2) != count:
         time.sleep(0.1)
@@ -259,12 +258,9 @@ if __name__ == "__main__":
 
     body = json.dumps(body)
 
-    print("sending stop")
     test.myMqttClient.myPublish("/s276033/my_prep_audio", body)
 
     
-    print(len(test.true_labels), len(test.last_layer_client1), len(test.last_layer_client2))
-
     if len(test.true_labels)!=count or len(test.last_layer_client1)!=count or len(test.last_layer_client2)!=count:
         print("Some messages went lost, restart application")
         test.end()
