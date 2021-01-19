@@ -113,9 +113,7 @@ class preprocess:
         spectrogram = self.get_spectrogram(audio)
         mfccs = self.get_mfccs(spectrogram)
         # Reshaping since only 1 audio at time si given for inference 
-        #print(1, self.num_frames, self.num_coefficients)
         mfccs = tf.reshape(mfccs, [1, self.num_frames, self.num_coefficients, 1])
-        #mfccs = tf.expand_dims(mfccs, -1)
 
         return mfccs
 
@@ -124,13 +122,9 @@ class preprocess:
 class CooperativeClient(DoSomething):
     def __init__(self, clientID):
         super().__init__(clientID)
-        # self.prova = []
         self.last_layer_client1 = []
         self.last_layer_client2 = []
-        # self.last_layer_client3 = []
-        # self.last_layer_client4 = []
         self.true_labels = []
-        # self.counter = 0
 
     def notify(self, topic, msg):
         
@@ -141,28 +135,13 @@ class CooperativeClient(DoSomething):
         output_bytes = base64.b64decode(output_string)
         output = tf.io.decode_raw(output_bytes, tf.float32)
 
-        # see if we want a numpy.array instead of a tf.tensor
-        #self.prova.append(output.numpy())
-
-        #print("message received")
-
-        #print(senml["bn"])
-        
         if senml["bn"] == "inference_client1":
             self.last_layer_client1.append(output)
         elif senml["bn"] == "inference_client2":
             self.last_layer_client2.append(output)
-        # elif senml["bn"] == "inference_client3":
-        #     self.last_layer_client3.append(output)
-        # elif senml["bn"] == "inference_client4":
-        #     self.last_layer_client4.append(output)
         else:
             print("invalid client: ", senml["bn"])
             sys.exit()
-
-        # self.counter += 1
-
-        # print(self.counter)
 
 
 
@@ -220,27 +199,17 @@ if __name__ == "__main__":
         parts = tf.strings.split(file_path, os.path.sep)
         label = parts[-2]
         label_id = tf.argmax(label == LABELS)
-        #print(file_path, label, label_id)
         audio_binary = tf.io.read_file(file_path)
         mfccs = Preprocess.preprocess_with_mfcc(audio_binary)
         input_tensor = mfccs
-        #print(input_tensor.shape, tf.reshape(input_tensor, [-1]).shape)
         y_true = label_id
 
-        # putting the true label to integer
         test.true_labels.append(int(y_true))
 
-        #print(y_true)
 
         audio_b64bytes = base64.b64encode(input_tensor.numpy())
         audio_string = audio_b64bytes.decode()
 
-        
-        # print("number of processed files: ", count)
-        # print(file_path)
-
-
-        #shape_b64bytes = base64.b64encode(input_tensor)
 
         body = {
             # my url
@@ -258,64 +227,23 @@ if __name__ == "__main__":
 
         body = json.dumps(body)
 
-        # modified myPublish in MQTT class in order not to print the entire print (the printing was commendted)
-        # also changed QOS from 2 to 0 for speed both for myPublish and mySubscribe
         test.myMqttClient.myPublish("/s276033/my_prep_audio", body)
 
-        # #tmp = time.time()
-        # while len(test.prova) != 2:
-        #    pass
-        #     #print(len(test.prova))
-        #     #time.sleep(0.1)
-        # #print(time.time()-tmp)
-
-        # #print(test.prova)
-
-        # #time.sleep(0.5)
-
-
-        # y_pred = np.argmax(test.prova[0])
-
-        # y_true = y_true.numpy().squeeze()
-
-        # test.prova = []
-        
-        # #print(y_pred)
-        # accuracy += y_pred == y_true
         count += 1
 
 
-
-    # accuracy/=float(count)
-    # print("Accuracy: {}".format(accuracy*100))
-
-    #print(test.true_labels)
-
     print(time.time()-start)
 
-    # tmp = time.time()
-    # while len(test.last_layer_client1) != count and len(test.last_layer_client2) != count:
-    #     #print(len(test.last_layer_dict_client1), len(test.last_layer_dict_client2), len(len(test.true_labels_dict.keys())))
-    #     #print(test.last_layer_client1)
-    #     time.sleep(0.1)
-    #     #print(test.last_layer_dict)
-    # print(time.time()-tmp)
+    tmp = time.time()
+    while len(test.last_layer_client1) != count and len(test.last_layer_client2) != count:
+        time.sleep(0.1)
+    print(time.time()-tmp)
 
-
-
-    # tmp = time.time()
-    # while len(test.last_layer_client1) != count and len(test.last_layer_client2) != count and len(test.last_layer_client3) != count and len(test.last_layer_client4) != count:
-    #     #print(len(test.last_layer_dict_client1), len(test.last_layer_dict_client2), len(len(test.true_labels_dict.keys())))
-    #     #print(test.last_layer_client1)
-    #     time.sleep(0.1)
-    #     #print(test.last_layer_dict)
-    # print(time.time()-tmp)
 
     # wait for things, estimate this time with the immediately above commented code
-    time.sleep(1)
+    #time.sleep(1)
 
     body = {
-        # my url
         "bn": "http://192.168.1.92/",
         "bt": timestamp,
         "e": [
@@ -342,12 +270,9 @@ if __name__ == "__main__":
         test.end()
         sys.exit()
     print(count)
-    #time.sleep(5)
+
 
     accuracy = 0
-    # counter = 0
-
-
     for i in range(count):
         pred_probs1 = tf.nn.softmax(test.last_layer_client1[i])
         pred_probs2 = tf.nn.softmax(test.last_layer_client2[i])
@@ -365,15 +290,6 @@ if __name__ == "__main__":
             
         accuracy += prediction==test.true_labels[i]
 
-
-
-    # for i in range(count):
-    #     # Al momento faccio la media intera delle 2 labels, solo per testare
-    #     #prediction = int((np.argmax(test.last_layer_client1[i]) + np.argmax(test.last_layer_client2[i]))/2)
-    #     prediction = int((np.argmax(test.last_layer_client1[i]) + np.argmax(test.last_layer_client2[i]) + np.argmax(test.last_layer_client3[i]) + np.argmax(test.last_layer_client4[i]))/4)
-    #     accuracy += prediction==test.true_labels[i]
-    #     #counter += 1
-    #     #print("current accuracy: ", accuracy/float(counter))
     
     accuracy/=float(count)
     print("Accuracy: {}".format(accuracy*100))   

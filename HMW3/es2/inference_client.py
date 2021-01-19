@@ -17,40 +17,25 @@ class InferenceClient(DoSomething):
         self.running = True
         
 
-    #action to do when a message is received
     def notify(self, topic, msg):
-        #get the result of the nn and forward to client
-
-        #start = time.time()
 
         now = datetime.datetime.now()
         timestamp = int(now.timestamp())
 
         senml = json.loads(msg)
 
-        #timestamp = senml["bt"]
 
         if senml["e"][0]["n"] == "stop":
-            #print(senml)
             self.running = False
-            #test.end()
 
         else:
-            #print(senml["e"])
-
             audio_string = senml["e"][0]["vd"]
 
-            #print(audio_string)
-
-            #decode audio from base64
             audio_bytes = base64.b64decode(audio_string)
             raw_audio = tf.io.decode_raw(audio_bytes, tf.float32)
 
             input_tensor = np.reshape(raw_audio, (1, 49, 10, 1))
-            #print(input_tensor, input_tensor.shape)
 
-            #get the nn from file
-            #interpreter = tflite.Interpreter(model_path="./big.tflite")
             interpreter = tflite.Interpreter(model_path=model_path)
             interpreter.allocate_tensors()
             input_details = interpreter.get_input_details()
@@ -61,9 +46,6 @@ class InferenceClient(DoSomething):
             interpreter.invoke()
             my_output = interpreter.get_tensor(output_details[0]['index'])
             my_output = my_output.squeeze()
-
-            #print(my_output, type(my_output))
-
 
             output_b64bytes = base64.b64encode(my_output)
             output_string = output_b64bytes.decode()
@@ -83,20 +65,11 @@ class InferenceClient(DoSomething):
             }
 
             body = json.dumps(body)
-            #print(body)
 
-            
-            #print("Output:", msg) 
-
-            #print(time.time()-start)
-            
             #Forward result
             test.myMqttClient.myPublish ("/s276033/output_channel", body) 	
-
-            #print("Result {} forwarded on output_channel".format(msg), self.clientID)
     
 
-#per capire se fare solo funzione o solo classe vedo se devo ridefinire anche il "onNotificationReceived"(probabilmente si )
 
 if __name__ == "__main__":
 
@@ -113,8 +86,6 @@ if __name__ == "__main__":
 
     model_path=args.model
 
-    # Se non uso id diversi per abbonarmi allo stesso topic ho robe strane
-    #clientID = "inference_client" + model_path.split(".")[0]
     clientID = "inference_client" + re.findall(r"\d.tflite", model_path)[0].split(".")[0]
     
     #subscribe to prep_audio channel
@@ -125,7 +96,4 @@ if __name__ == "__main__":
 
     while test.running is True:
         time.sleep(1)
-    # while (a < 30):
-    #     a += 1
-    #     time.sleep(1)
     test.end()
