@@ -11,8 +11,8 @@ import sys
 from subprocess import call
 from collections import defaultdict 
 
-call('sudo sh -c "echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor"',
-            shell=True)
+# call('sudo sh -c "echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor"',
+#             shell=True)
 
 
 
@@ -127,8 +127,8 @@ class CooperativeClient(DoSomething):
         # self.prova = []
         self.last_layer_client1 = []
         self.last_layer_client2 = []
-        self.last_layer_client3 = []
-        self.last_layer_client4 = []
+        # self.last_layer_client3 = []
+        # self.last_layer_client4 = []
         self.true_labels = []
         # self.counter = 0
 
@@ -152,10 +152,10 @@ class CooperativeClient(DoSomething):
             self.last_layer_client1.append(output)
         elif senml["bn"] == "inference_client2":
             self.last_layer_client2.append(output)
-        elif senml["bn"] == "inference_client3":
-            self.last_layer_client3.append(output)
-        elif senml["bn"] == "inference_client4":
-            self.last_layer_client4.append(output)
+        # elif senml["bn"] == "inference_client3":
+        #     self.last_layer_client3.append(output)
+        # elif senml["bn"] == "inference_client4":
+        #     self.last_layer_client4.append(output)
         else:
             print("invalid client: ", senml["bn"])
             sys.exit()
@@ -293,9 +293,18 @@ if __name__ == "__main__":
 
     print(time.time()-start)
 
+    # tmp = time.time()
+    # while len(test.last_layer_client1) != count and len(test.last_layer_client2) != count:
+    #     #print(len(test.last_layer_dict_client1), len(test.last_layer_dict_client2), len(len(test.true_labels_dict.keys())))
+    #     #print(test.last_layer_client1)
+    #     time.sleep(0.1)
+    #     #print(test.last_layer_dict)
+    # print(time.time()-tmp)
+
+
 
     # tmp = time.time()
-    # while len(test.last_layer_client1) != count and len(test.last_layer_client2) != count and len(test.last_layer_client3) != count and len(test.last_layer_client3) != count:
+    # while len(test.last_layer_client1) != count and len(test.last_layer_client2) != count and len(test.last_layer_client3) != count and len(test.last_layer_client4) != count:
     #     #print(len(test.last_layer_dict_client1), len(test.last_layer_dict_client2), len(len(test.true_labels_dict.keys())))
     #     #print(test.last_layer_client1)
     #     time.sleep(0.1)
@@ -337,13 +346,34 @@ if __name__ == "__main__":
 
     accuracy = 0
     # counter = 0
+
+
     for i in range(count):
-        # Al momento faccio la media intera delle 2 labels, solo per testare
-        #prediction = int((np.argmax(test.last_layer_client1[i]) + np.argmax(test.last_layer_client2[i]))/2)
-        prediction = int((np.argmax(test.last_layer_client1[i]) + np.argmax(test.last_layer_client2[i]) + np.argmax(test.last_layer_client3[i]) + np.argmax(test.last_layer_client4[i]))/4)
+        pred_probs1 = tf.nn.softmax(test.last_layer_client1[i])
+        pred_probs2 = tf.nn.softmax(test.last_layer_client2[i])
+
+        pred_probs1 = tf.sort(pred_probs1, direction='DESCENDING')
+        pred_probs2 = tf.sort(pred_probs2, direction='DESCENDING')
+
+        score_margin1 = pred_probs1[0] - pred_probs1[1]
+        score_margin2 = pred_probs2[0] - pred_probs2[1]
+
+        if score_margin1 > score_margin2:
+            prediction = np.argmax(test.last_layer_client1[i])
+        else:
+            prediction = np.argmax(test.last_layer_client2[i])
+            
         accuracy += prediction==test.true_labels[i]
-        #counter += 1
-        #print("current accuracy: ", accuracy/float(counter))
+
+
+
+    # for i in range(count):
+    #     # Al momento faccio la media intera delle 2 labels, solo per testare
+    #     #prediction = int((np.argmax(test.last_layer_client1[i]) + np.argmax(test.last_layer_client2[i]))/2)
+    #     prediction = int((np.argmax(test.last_layer_client1[i]) + np.argmax(test.last_layer_client2[i]) + np.argmax(test.last_layer_client3[i]) + np.argmax(test.last_layer_client4[i]))/4)
+    #     accuracy += prediction==test.true_labels[i]
+    #     #counter += 1
+    #     #print("current accuracy: ", accuracy/float(counter))
     
     accuracy/=float(count)
     print("Accuracy: {}".format(accuracy*100))   

@@ -29,7 +29,9 @@ if version == 1:
 elif version == 2:
     alpha = 0.7
 elif version == 3:
-    alpha = 0.2
+    # ele
+    #alpha = 0.2
+    alpha = 0.4
 else:
     print("Wrong version")
     sys.exit()
@@ -44,7 +46,7 @@ ROOT_DIR = "./"
 dataset_dir= ROOT_DIR + 'kws_test_{}'.format(version)
 saved_model_dir = './models/kws'
 tflite_model_dir = './{}.tflite.zlib'.format(version)
-#uncompressed_dir= './Group1_kws_{}.tflite'.format(version)
+uncompressed_dir= './{}.tflite'.format(version)
 
 zip_path = tf.keras.utils.get_file(
         origin="http://storage.googleapis.com/download.tensorflow.org/data/mini_speech_commands.zip",
@@ -224,22 +226,21 @@ if version == 1 or version == 2:
 
 elif version == 3:
     model = keras.Sequential([
-        keras.layers.Conv2D(filters=128,kernel_size=[3,3],strides=strides, use_bias=False),
+        keras.layers.Conv2D(filters=int(alpha*128), kernel_size=[3,3],strides=strides, use_bias=False),
         keras.layers.BatchNormalization(momentum=0.1),
         keras.layers.ReLU(),
-        keras.layers.Conv2D(filters=128,kernel_size=[3,3],strides=[1, 1], use_bias=False),
+        keras.layers.Conv2D(filters=int(alpha*128), kernel_size=[3,3],strides=[1, 1], use_bias=False),
         keras.layers.BatchNormalization(momentum=0.1),
         keras.layers.ReLU(),
-        keras.layers.Conv2D(filters=128,kernel_size=[3,3],strides=[1,1], use_bias=False),
+        keras.layers.Conv2D(filters=int(alpha*128), kernel_size=[3,3],strides=[1,1], use_bias=False),
         keras.layers.BatchNormalization(momentum=0.1),
         keras.layers.ReLU(),
-        keras.layers.Conv2D(filters=128,kernel_size=[3,3],strides=[1,1], use_bias=False),
+        keras.layers.Conv2D(filters=int(alpha*128),kernel_size=[3,3],strides=[1,1], use_bias=False),
         keras.layers.BatchNormalization(momentum=0.1),
         keras.layers.ReLU(),
         keras.layers.GlobalAveragePooling2D(),
         keras.layers.Dense(units=8) #10 if silence
         ])
-
 else:
     print("Wrong version")
     sys.exit()
@@ -286,3 +287,7 @@ with open(tflite_model_dir, 'wb') as fp:
     fp.write(tflite_compressed)
 
 print(f"Size of compressed tflite model: {os.path.getsize(tflite_model_dir)/1024} kB")
+
+#save uncompressed model
+with open(uncompressed_dir, 'wb') as fp:
+    fp.write(tflite_model)

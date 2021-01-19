@@ -29,6 +29,7 @@ frame_length = 240
 frame_step = 120
 
 ROOT_DIR = "./"
+#TODO: see if we have to pass a tflite or tflite.zip
 tfModel = "./little.tflite.zlib"
 url = "http://192.168.1.232:8080/"
 

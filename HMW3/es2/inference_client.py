@@ -8,6 +8,7 @@ import datetime
 import json
 import argparse
 import sys
+import re
 
 class InferenceClient(DoSomething):
     def __init__(self, clientID, model_path):
@@ -49,7 +50,8 @@ class InferenceClient(DoSomething):
             #print(input_tensor, input_tensor.shape)
 
             #get the nn from file
-            interpreter = tflite.Interpreter(model_path="./big.tflite")
+            #interpreter = tflite.Interpreter(model_path="./big.tflite")
+            interpreter = tflite.Interpreter(model_path=model_path)
             interpreter.allocate_tensors()
             input_details = interpreter.get_input_details()
             output_details = interpreter.get_output_details()
@@ -112,7 +114,8 @@ if __name__ == "__main__":
     model_path=args.model
 
     # Se non uso id diversi per abbonarmi allo stesso topic ho robe strane
-    clientID = "inference_client" + model_path.split(".")[0]
+    #clientID = "inference_client" + model_path.split(".")[0]
+    clientID = "inference_client" + re.findall(r"\d.tflite", model_path)[0].split(".")[0]
     
     #subscribe to prep_audio channel
     test = InferenceClient(clientID, model_path)
