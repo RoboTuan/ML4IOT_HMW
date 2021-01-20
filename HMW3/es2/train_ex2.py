@@ -27,10 +27,6 @@ sampling_rate = 16000
 if version == 1:
     alpha = 0.5
 elif version == 2:
-    alpha = 0.7
-elif version == 3:
-    # ele
-    #alpha = 0.2
     alpha = 0.4
 else:
     print("Wrong version")
@@ -45,7 +41,6 @@ frame_step = 320
 ROOT_DIR = "./"
 dataset_dir= ROOT_DIR + 'kws_test_{}'.format(version)
 saved_model_dir = './models/kws'
-tflite_model_dir = './{}.tflite.zlib'.format(version)
 uncompressed_dir= './{}.tflite'.format(version)
 
 zip_path = tf.keras.utils.get_file(
@@ -202,8 +197,7 @@ if os.path.exists(dataset_dir):
 tf.data.experimental.save(test_ds, dataset_dir)
 
 # Model selection and trainig
-if version == 1 or version == 2:
-    print("running model 1")
+if version == 1:
     model = keras.Sequential([
         keras.layers.Conv2D(filters=int(alpha*256), kernel_size=[3, 3], strides=strides, use_bias=False),
         keras.layers.BatchNormalization(momentum=0.1),
@@ -224,7 +218,7 @@ if version == 1 or version == 2:
         keras.layers.Dense(units=8)
         ])
 
-elif version == 3:
+elif version == 2:
     model = keras.Sequential([
         keras.layers.Conv2D(filters=int(alpha*128), kernel_size=[3,3],strides=strides, use_bias=False),
         keras.layers.BatchNormalization(momentum=0.1),
@@ -247,19 +241,9 @@ else:
 
 
 
-if version == 1 or version == 3:
-    model.compile(optimizer='adam',
-                loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                metrics=['accuracy'])
-
-elif version == 2:
-    model.compile(optimizer=tf.keras.optimizers.Adagrad(0.1),
-                loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-                metrics=['accuracy'])
-
-else:
-    print("Wrong version")
-    sys.exit()
+model.compile(optimizer='adam',
+            loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            metrics=['accuracy'])
 
 
 history = model.fit(
