@@ -186,8 +186,6 @@ def success_checker(predictions, threshold):
     else:
         return False
 
-counter_big = 0
-
 accuracy = 0
 count = 0
 com_size = 0
@@ -211,8 +209,6 @@ for file_path in test_files:
 
 
     if BIG is True:
-
-        counter_big += 1
 
         now = datetime.datetime.now()
         timestamp = int(now.timestamp())
@@ -260,8 +256,6 @@ for file_path in test_files:
 accuracy/=float(count)
 print("Accuracy: {}".format(accuracy*100))
 print("Comunication size: {} MB".format(com_size/(2**20)))
-print("Calls to big model: ", counter_big)
-
     
 
 

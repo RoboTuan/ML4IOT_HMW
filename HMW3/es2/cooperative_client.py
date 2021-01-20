@@ -146,7 +146,6 @@ class CooperativeClient(DoSomething):
 
 
 
-start = time.time()
 
 if __name__ == "__main__":
 
@@ -238,7 +237,6 @@ if __name__ == "__main__":
         if (time.time()-tmp > 60):
             break
         time.sleep(0.1)
-    #print(time.time()-tmp)
 
 
     # wait for things, estimate this time with the immediately above commented code
@@ -291,6 +289,5 @@ if __name__ == "__main__":
     
     accuracy/=float(count)
     print("Accuracy: {}".format(accuracy*100))   
-    print(time.time()-start)
 
     test.end()
