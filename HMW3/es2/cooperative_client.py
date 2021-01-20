@@ -235,8 +235,10 @@ if __name__ == "__main__":
 
     tmp = time.time()
     while len(test.last_layer_client1) != count and len(test.last_layer_client2) != count:
+        if (time.time()-tmp > 60):
+            break
         time.sleep(0.1)
-    print(time.time()-tmp)
+    #print(time.time()-tmp)
 
 
     # wait for things, estimate this time with the immediately above commented code
@@ -265,7 +267,7 @@ if __name__ == "__main__":
         print("Some messages went lost, restart application")
         test.end()
         sys.exit()
-    print(count)
+    #print(count)
 
 
     accuracy = 0
