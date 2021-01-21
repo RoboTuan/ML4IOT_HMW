@@ -273,17 +273,15 @@ if __name__ == "__main__":
         pred_probs1 = tf.nn.softmax(test.last_layer_client1[i])
         pred_probs2 = tf.nn.softmax(test.last_layer_client2[i])
 
-        pred_probs1 = tf.sort(pred_probs1, direction='DESCENDING')
-        pred_probs2 = tf.sort(pred_probs2, direction='DESCENDING')
+        pred_probs1_sort = tf.sort(pred_probs1, direction='DESCENDING')
+        pred_probs2_sort = tf.sort(pred_probs2, direction='DESCENDING')
 
-        score_margin1 = pred_probs1[0] - pred_probs1[1]
-        score_margin2 = pred_probs2[0] - pred_probs2[1]
+        score_margin1 = pred_probs1_sort[0] - pred_probs1_sort[1]
+        score_margin2 = pred_probs2_sort[0] - pred_probs2_sort[1]
 
-        if score_margin1 > score_margin2:
-            prediction = np.argmax(test.last_layer_client1[i])
-        else:
-            prediction = np.argmax(test.last_layer_client2[i])
-            
+        pred_probs = score_margin1 * pred_probs1 + score_margin2 * pred_probs2
+
+        prediction = np.argmax(pred_probs)
         accuracy += prediction==test.true_labels[i]
 
     
