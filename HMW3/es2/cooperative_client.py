@@ -233,7 +233,7 @@ if __name__ == "__main__":
 
 
     tmp = time.time()
-    while len(test.last_layer_client1) != count and len(test.last_layer_client2) != count:
+    while len(test.last_layer_client1) != count or len(test.last_layer_client2) != count:
         if (time.time()-tmp > 60):
             break
         time.sleep(0.1)
