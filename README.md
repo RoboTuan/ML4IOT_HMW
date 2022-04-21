@@ -1,2 +1,4 @@
-# ML4IOT_hmw1
-Project work for the course "Machine learning for IOT" at Politecnico di Torino
+# ML4IOT
+Project work for the course "Machine Learning for IOT" at Politecnico di Torino.  
+In this work we had to develop several scripts to train deep-learning models for audio prediction and humudity & temperature forecasting. The preprocessing and inference stages were optimized in time and space for a Raspberry Pi 4. This project has 3 sections. In the first one we had to efficiently record and preprocess audio, humidity and temperature data from our Raspberry. In the second stage we first trained predictive models and then optmized them for inference with techniques such as post-training quantization and pruning. Finally, in the last stage we built a more complex system for collaborative inference between the board and our computer with HTTP and MQTT protocols.  
+For more detail, each folder has a dedicated report.
